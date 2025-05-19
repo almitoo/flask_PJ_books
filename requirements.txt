@@ -1,0 +1,22 @@
+flask
+flask-jwt-extended
+pymongo
+werkzeug
+
+
+--extra-index-url https://download.pytorch.org/whl/cu124
+
+Flask
+sentencepiece
+huggingface_hub[cli]
+flask-cors
+requests
+diffusers
+transformers
+accelerate
+torch
+torchvision
+google-generativeai
+hf_xet
+bitsandbytes
+python-dotenv
