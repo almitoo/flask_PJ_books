@@ -39,3 +39,29 @@ def create_book():
         "message": "Book created successfully",
         "book_id": str(result.inserted_id)
     }), 201
+
+
+@books.route("/get_user_books", methods=["GET"])
+@jwt_required()
+def get_user_books():
+    email = get_jwt_identity()
+
+    user = users_collection.find_one({"email": email})
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    # חיפוש כל הספרים לפי user_id
+    user_books = books_collection.find({"user_id": user["_id"]})
+
+    books_list = []
+    for book in user_books:
+        books_list.append({
+            "id": str(book["_id"]),
+            "title": book.get("title"),
+            "author": book.get("author"),
+            "created_at": book.get("created_at").isoformat(),
+            "num_pages": book.get("num_pages"),
+            "pages": book.get("pages")
+        })
+
+    return jsonify({"books": books_list}), 200
