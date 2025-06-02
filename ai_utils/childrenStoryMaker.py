@@ -1,6 +1,6 @@
 import ai_utils.textMaker as t
 from ai_utils.voiceMaker import newVoiceFile
-import ai_utils.imageAIMaker 
+import ai_utils.imageAIMaker
 import re
 
 # הפונקציה מקבלת טקסט של סיפור ילדים ומפרידה אותו לעמודים
@@ -108,12 +108,12 @@ class Story():
             pathImage = None
             if i==0:
                 #pathImage = f"{title}_page{i}_pic"
-                pathImage = imageAIMaker.makeImageAI(inputText)
+                pathImage = ai_utils.imageAIMaker.imageAIMaker.makeImageAI(inputText)
                 url_first_image = str(pathImage)
             else:
                 
                 #pathImage = f"{title}_page{i}_pic"
-                pathImage = imageAIMaker.makeImageFromImage(inputText ,url_first_image)
+                pathImage = ai_utils.imageAIMaker.imageAIMaker.makeImageFromImage(inputText ,url_first_image)
             
             images_prompts.append(inputText)
 
@@ -176,10 +176,10 @@ class Story():
             inputText = t.makeTextAI(inputText)
             pathImage = None
             if i==0:
-                pathImage = imageAIMaker.makeImageAI(inputText)
+                pathImage = ai_utils.imageAIMaker.imageAIMaker.makeImageAI(inputText)
                 url_first_image = str(pathImage)
             else:
-                pathImage = imageAIMaker.makeImageFromImage(inputText ,url_first_image)
+                pathImage = ai_utils.imageAIMaker.imageAIMaker.makeImageFromImage(inputText ,url_first_image)
             #no rellevant: move from  stable diffusion to gemini
             #pathImage = imageAIMaker.makeImageAI(inputText , steps , height_images  , width_images , staticNumIdPic)
             #staticNumIdPic+=1
@@ -260,10 +260,10 @@ class Continued_story(Story):
                 inputText = t.makeTextAI(inputText)
             pathImage = None
             if i==0:
-                pathImage = imageAIMaker.makeImageAI(inputText)
+                pathImage = ai_utils.imageAIMaker.imageAIMaker.makeImageAI(inputText)
                 url_first_image = str(pathImage)
             else:
-                pathImage = imageAIMaker.makeImageFromImage(inputText ,url_first_image)
+                pathImage = ai_utils.imageAIMaker.imageAIMaker.makeImageFromImage(inputText ,url_first_image)
             #no rellevant: move from  stable diffusion to gemini
             #pathImage = imageAIMaker.makeImageAI(inputText , steps , height_images  , width_images , staticNumIdPic)
             #staticNumIdPic+=1

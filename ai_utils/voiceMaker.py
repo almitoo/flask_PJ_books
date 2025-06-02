@@ -1,7 +1,8 @@
 
 from gtts import gTTS
-from ai_utils import memoryManager
-from ai_utils.qualityEnum import fileType
+from . import memoryManager
+from .qualityEnum import fileType
+
 def newVoiceFile(text_voice ,file_name, slow_voice = False):
 
     language = 'en'
