@@ -1,6 +1,6 @@
-import memoryManager
+from ai_utils import memoryManager
 import requests
-from qualityEnum import fileType
+from ai_utils.qualityEnum import fileType
 
 #version 1 with satble diffusion ,  imports not rellevent
 # import torch
