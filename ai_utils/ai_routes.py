@@ -68,7 +68,7 @@ def create_new_AI_text():
         return ex.exception_ResourceExhausted(e)
     except Exception as e:
         return ex.exception_internal_server_issue(e)
-    
+# יצירת סיפור חדש מתאים לפיצר הראשון והשני, מקבל JSON    
 @ai_story.route('/MagicOfStory/Story', methods=['POST'])
 def create_new_story():
     global staticNumIdPic

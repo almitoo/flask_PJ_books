@@ -17,6 +17,9 @@ def signup():
     full_name = data.get("full_name", "").strip()
     mobile = data.get("mobile", "").strip()
     genres = data.get("genres",[])
+    bio = data.get("bio", "")
+    location = data.get("location", "")
+    image_base64 = data.get("image_base64", "")
 
     if not full_name or not email or not password or not mobile:
         return jsonify({"message": "All fields are required"}), 400
@@ -45,12 +48,22 @@ def signup():
         "mobile": mobile,
         "password_hash": hashed_password,
         "created_at": datetime.datetime.utcnow(),
-        "genres": genres
+        "genres": genres,
+        "bio": bio,
+        "location": location,
+        "image_base64": image_base64
     }
     users_collection.insert_one(user)
     token = create_access_token(identity=email, expires_delta=datetime.timedelta(hours=1))
 
-    return jsonify({"message": "User registered successfully","token": token,  "userId": str(user["_id"]), "full_name": str(user["full_name"])}), 201
+    return jsonify({
+        "message": "User registered successfully",
+        "token": token,
+        "userId": str(user["_id"]),
+        "full_name": str(user["full_name"]),
+        "bio": user["bio"],
+        "location": user["location"],
+        "image_base64": user["image_base64"]}), 201
 
 # 🔹 התחברות
 @auth.route("/login", methods=["POST"])
@@ -69,7 +82,10 @@ def login():
         "message": "Login successful",
         "token": token,
         "userId": str(user["_id"]),
-        "full_name": str(user["full_name"]) # ✅ מחזיר את מזהה המשתמש
+        "full_name": str(user["full_name"]),
+        "bio": str(user["bio"]),
+        "location": str(user["location"]),
+        "image_base64": str(user["image_base64"])
     })
 # 🔹 הבאת פרטי משתמש מחובר
 @auth.route("/user", methods=["GET"])
@@ -102,3 +118,60 @@ def update_genres():
         return jsonify({"message": "User not found"}), 404
 
     return jsonify({"message": "Genres updated successfully"}), 200
+
+
+@auth.route('/update_bio', methods=['POST'])
+def update_bio():
+    data = request.get_json()
+    user_id = data['user_id']
+    bio = data['bio']
+
+    result = users_collection.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"bio": bio}}
+    )
+
+    if result.modified_count:
+        return jsonify({"status": "success"}), 200
+    else:
+        return jsonify({"status": "no change"}), 200
+
+
+@auth.route('/update_location', methods=['POST'])
+def update_location():
+    data = request.get_json()
+    user_id = data['user_id']
+    location = data['location']
+
+    result = users_collection.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"location": location}}
+    )
+
+    if result.modified_count:
+        return jsonify({"status": "success"}), 200
+    else:
+        return jsonify({"status": "no change"}), 200
+    
+    
+@auth.route('/update_profile_image', methods=['POST'])
+def update_profile_image():
+    data = request.get_json()
+    user_id = data['user_id']
+    image_base64 = data['image_base64']
+
+    if not user_id or not image_base64:
+        return jsonify({"status": "error", "message": "Missing user_id or image_base64"}), 400
+
+    result = users_collection.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"image_base64": image_base64}}
+    )
+
+    if result.modified_count:
+        return jsonify({"status": "success"}), 200
+    else:
+        return jsonify({"status": "no change"}), 200
+
+    
+
