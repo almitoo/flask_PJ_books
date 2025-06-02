@@ -1,16 +1,19 @@
-import textMaker as t
-from voiceMaker import newVoiceFile
-import imageAIMaker 
+import ai_utils.textMaker as t
+from ai_utils.voiceMaker import newVoiceFile
+import ai_utils.imageAIMaker 
 import re
 
-
+# הפונקציה מקבלת טקסט של סיפור ילדים ומפרידה אותו לעמודים
+# כל עמוד מתחיל במחרוזת "Page X: " כאשר X הוא מספר העמוד
 def storyTextSplit(text):
     matches = re.split(r'Page \d+:\s', text)
     # Remove the first empty string if it exists, and strip whitespace
     arr = [page.strip() for page in matches if page.strip()]
     print(arr)
     return arr
-
+# # מחלקת page מייצגת עמוד בסיפור ילדים
+# כוללת טקסט , קישור לתמונה וקובץ קול
+# מחזירה את המידע כdict
 class page():
     def __init__(self , text_page, img_url , voice_file_url):
         self.text_page = text_page
@@ -38,7 +41,11 @@ class page():
 
     
 
-
+# מחלקת הליבה שמייצרת את הסיפור
+# אם לא נשלח טקסט עמודים היא מייצרת את כל הסיפור לבד עם
+# ai_story_maker
+# אם נשלח טקסט עמודים היא מייצרת את הסיפור עם
+# story_media_maker
 class Story():
 
     def __init__(
@@ -59,7 +66,10 @@ class Story():
             print("making a new story , pages has been have by the user.")
             self.story_media_maker(subject,numPages,auther,description,title,make_voice,pages_texts_list)
         print("story has been complete \n\n")
-
+# נשתמש בה כאשר המשתמש שלח כבר טקסט של הסיפור
+# אם אין כותרת הAI ימציא כותרת
+# מייצר תמונה וקובץ קול
+# כל הנתונים נשמרים כאוביקט page
     def story_media_maker(
             self ,
             subject: str,
@@ -116,7 +126,12 @@ class Story():
             self.pages.append(page(pages_texts_list[i] , pathImage,voice_file_url)) 
 
         
-
+# נשתמש בה כאשר המשתמש לא שלח טקסט עמודים
+# כל הטקסט יכתב בעזרת
+# makeTextAI
+# מפצל את העמודים בעזרת
+# storyTextSplit
+# עבוא כל עמוד מייצר תמונה וקובץ קול
     def AI_story_maker(
             self ,
             subject: str,
@@ -174,7 +189,8 @@ class Story():
             self.pages.append(page(pages_text[i] , pathImage,voice_file_url)) 
 
         
-    
+    # # מחזירה את הסיפור כdict
+    # המילון יכלול את מספר עמודים, שם המחבר, תיאור, כותרת וכל עמוד עם הטקסט שלו, קישור לתמונה וקובץ קול
     def to_dict(self):
         print(f"to_dict called: num pages = {len(self.pages)}")  
 
@@ -194,7 +210,8 @@ class Story():
 
     
 
-
+# מטרת המחלקה ליצור סיפור המשך לסיפור קיים
+# היא מקבלת את מספר העמודים, שם המחבר, תיאור, כותרת, עמודים של הספר הקודם וכותרת הספר הקודם
 class Continued_story(Story):
     def __init__(self,numPages, auther, description, title
                  ,previous_book_pages  ,previous_book_title

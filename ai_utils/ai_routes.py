@@ -11,7 +11,9 @@ from google.api_core.exceptions import ResourceExhausted
 ai_story = Blueprint("ai_story", __name__)
 
 staticNumIdPic = 0
-
+# מקבלת טקסט שמתאר סצנה בסיפור ילדים שולחת את הטקסט  לפונקציית
+# maketextai
+# מחזירה קישור לתמונה שנוצרה על ידי הAI
 @ai_story.route('/MagicOfStory/ImageAI', methods=['POST'])
 def create_new_AI_image():
     global staticNumIdPic
@@ -33,7 +35,10 @@ def create_new_AI_image():
         return ex.exception_ResourceExhausted(e)
     except Exception as e:
         return ex.exception_internal_server_issue(e)
-
+# מקבלת טקסט וכתובת של תמונה קיימת
+# מנסה ליצור תמונה חדשה מבוססת על הקודמת בעזרת הפונקציה
+# makeImageFromImage
+# מחזירה קישור לתמונה החדשה
 @ai_story.route('/MagicOfStory/ImageFromImage', methods=['POST'])
 def create_new_AI_image_from_image():
     data = request.get_json()  # Get JSON data from the request body
@@ -53,7 +58,9 @@ def create_new_AI_image_from_image():
         return ex.exception_ResourceExhausted(e)
     except Exception as e:
         return ex.exception_internal_server_issue(e)
-
+# שולחת את האינפוט לפונקציית
+# maketextai
+# שמייצר את הטקסט ומחזיר אותו
 @ai_story.route('/MagicOfStory/Text', methods=['POST'])
 def create_new_AI_text():
     data = request.get_json()  # Get JSON data from the request body
@@ -68,7 +75,12 @@ def create_new_AI_text():
         return ex.exception_ResourceExhausted(e)
     except Exception as e:
         return ex.exception_internal_server_issue(e)
-# יצירת סיפור חדש מתאים לפיצר הראשון והשני, מקבל JSON    
+# יוצרת אוביקט חדש של סיפור דרך
+# child.Story
+# היא יכולה להיעזר בטקסטים קיימים או לייצר חדשים לבד
+# הוא מייצר גם קול לטקסא
+# מחזירה את הסיפור כאוביקט גיסון
+# הפונקציה נותנת מענה לפיצר הראשון והשני
 @ai_story.route('/MagicOfStory/Story', methods=['POST'])
 def create_new_story():
     global staticNumIdPic
@@ -93,7 +105,11 @@ def create_new_story():
         return ex.exception_ResourceExhausted(e)
     except Exception as e:
         return ex.exception_internal_server_issue(e)
-
+# מייצרת סיפור המשך לסיפור קיים
+# יוצרת סיפור חדש דרך
+# child.Continued_story
+# מחזירה את הסיפור החדש כאוביקט גיסון
+# הפונקציה נותנת מענה לפיצר השלישי
 @ai_story.route('/MagicOfStory/Story/Sequel',methods=['POST'])
 def create_new_story_sequel():
     global staticNumIdPic
@@ -120,7 +136,10 @@ def create_new_story_sequel():
         return ex.exception_ResourceExhausted(e)
     except Exception as e:
         return ex.exception_internal_server_issue(e)
-
+# מקבלת טקסט של עמוד מהסיפור
+# ויוצרת קובץ קול בעזרת הפונקציה
+# voiceMaker.newVoiceFile
+# מחזירה את הקישור לקובץ הקול שנוצר
 @ai_story.route('/MagicOfStory/voice',methods=['POST'])
 def make_new_text_to_speach():
     data = request.get_json()  # Get JSON data from the request body
