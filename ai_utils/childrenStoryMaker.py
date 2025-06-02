@@ -1,6 +1,6 @@
-import textMaker as t
-from voiceMaker import newVoiceFile
-import imageAIMaker 
+from. import textMaker as t
+from .voiceMaker import newVoiceFile
+from. import imageAIMaker 
 import re
 
 

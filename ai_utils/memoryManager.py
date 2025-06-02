@@ -1,9 +1,9 @@
 import firebase_admin
 from firebase_admin import credentials , storage
-from ai_utils.qualityEnum import fileType
+from .qualityEnum import fileType
 
 def initialize_app():
-    cred = credentials.Certificate("private/pawcuts-60a6c-firebase-adminsdk-bnup5-daabf25f72.json")
+    cred = credentials.Certificate("pawcuts-60a6c-firebase-adminsdk-bnup5-daabf25f72.json")
     firebase_admin.initialize_app(cred,{
         'storageBucket': 'pawcuts-60a6c.appspot.com'
     })
