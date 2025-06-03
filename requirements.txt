@@ -2,15 +2,10 @@ flask
 flask-jwt-extended
 pymongo
 werkzeug
-
-
 --extra-index-url https://download.pytorch.org/whl/cu124
-
 Flask
 flask-cors
 requests
-diffusers
-transformers
 accelerate
 google-generativeai
 hf_xet
@@ -19,3 +14,4 @@ python-dotenv
 gtts
 firebase_admin
 google-genai>=1.0.0
+Pillow

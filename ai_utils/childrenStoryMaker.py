@@ -88,8 +88,9 @@ class Story():
 
             inputText = f'make an image prompt for children story according to this text not longer then 15 words {pages_texts_list[i]} , the subject of the story :{subject} '
             if (i>0):
-                previous_story_pages = ' '.join([prompt for prompt in images_prompts])
-                inputText += f'\n making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects]. The image should reflect a coherent world and preserve recurring elements seen in previous images. Focus on [relevant features , e.g., expression, background setting, lighting]. \n here is the previous story pages images prompts for refrence: {previous_story_pages}'
+                cumulative_image_prompts = ' '.join([prompt for prompt in images_prompts])
+                previous_story_pages = ' '.join([pages_texts_list[j] for j in range(i)])
+                inputText += f'\n making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects]. The image should reflect a coherent world and preserve recurring elements seen in previous images. Focus on relevant features , e.g., expression, background setting, lighting and characters. \n here is the previous story pages for refrence {previous_story_pages}\n and here is the previous story pages images prompts for refrence: {cumulative_image_prompts}'
             
             print(inputText)
 
