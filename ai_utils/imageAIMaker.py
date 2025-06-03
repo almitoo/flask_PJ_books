@@ -48,6 +48,9 @@ def makeImageAI(promt):
     apiKey = getenv("API_KEY")
     client = genai.Client(api_key=apiKey)
 
+
+    #adding resulotion
+    promt +=",4K"
     contents = (promt)
 
     response = client.models.generate_content(
@@ -109,6 +112,9 @@ def makeImageFromImage(prompt  ,url_image_source):
     load_dotenv(override= True)
     apiKey = getenv("API_KEY")
     client = genai.Client(api_key=apiKey)
+
+    #adding resulotion and consistent
+    promt +="making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects].,4K "
 
     # Load image from URL
     response = requests.get(url_image_source)

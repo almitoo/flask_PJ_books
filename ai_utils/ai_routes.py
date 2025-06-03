@@ -1,13 +1,12 @@
 from flask import Blueprint, request, url_for, jsonify, send_file
-from ai_utils.qualityEnum import imageQuality
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from ai_utils.textMaker import makeTextAI
 from ai_utils import childrenStoryMaker as child
 from ai_utils import imageAIMaker
 from ai_utils import voiceMaker
-from ai_utils.memoryManager import initialize_app
 from ai_utils import exceptionHandler as ex
 from google.api_core.exceptions import ResourceExhausted
-
+from books.books import create_book_from_ai_utils
 ai_story = Blueprint("ai_story", __name__)
 
 staticNumIdPic = 0
@@ -70,6 +69,8 @@ def create_new_AI_text():
         return ex.exception_internal_server_issue(e)
 # יצירת סיפור חדש מתאים לפיצר הראשון והשני, מקבל JSON    
 @ai_story.route('/MagicOfStory/Story', methods=['POST'])
+#add for create the book in the mongoDB Yam 
+@jwt_required()
 def create_new_story():
     global staticNumIdPic
     data = request.get_json()  # Get JSON data from the request body
@@ -85,7 +86,10 @@ def create_new_story():
         #optional value , don't raise exception
         pages_texts_list = list(data.get("story_pages",[]))
         story_obj = child.Story(subject , numPages, auther , description,title, pages_texts_list , enable_voice)
-        return jsonify(story_obj.to_dict())
+        #add story to DB
+        jsonBook = story_obj.to_dict()
+        create_book_from_ai_utils(jsonBook)
+        return jsonify(jsonBook)
 
     except KeyError as e:
         return ex.exception_json_value(e)
