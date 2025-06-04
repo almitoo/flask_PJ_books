@@ -69,8 +69,11 @@ def signup():
 @auth.route("/login", methods=["POST"])
 def login():
     data = request.json
-    email = data.get("email")
-    password = data.get("password")
+    email = data.get("email","")
+    password = data.get("password","")
+
+    if not email or not password:
+        return jsonify({"message": "All fields are required"}), 400
 
     user = users_collection.find_one({"email": email})
     if not user or not check_password_hash(user["password_hash"], password):
@@ -87,6 +90,7 @@ def login():
         "location": str(user["location"]),
         "image_base64": str(user["image_base64"])
     })
+
 # 🔹 הבאת פרטי משתמש מחובר
 @auth.route("/user", methods=["GET"])
 @jwt_required()

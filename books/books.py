@@ -56,6 +56,7 @@ def create_book_from_ai_utils(jsonBookData):
     book = {
         "title": title,
         "author": author,
+        "description" :description,
         "user_id": user["_id"],
         "created_at": datetime.datetime.utcnow(),
         "num_pages": len(pages),
