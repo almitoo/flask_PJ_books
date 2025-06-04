@@ -1,3 +1,8 @@
+from email.mime.text import MIMEText
+import random
+import smtplib
+import string
+import bcrypt
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
@@ -175,3 +180,58 @@ def update_profile_image():
 
     
 
+SMTP_EMAIL = "amitishay@gmail.com"
+SMTP_PASSWORD = "fada mpym gfbj tszr"
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+
+def generate_random_password(length=10):
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+
+def hash_password(password):
+    return generate_password_hash(password)
+
+def send_email(to_email, new_password):
+    subject = "Your New Password"
+    body = f"Your new password is: {new_password}"
+    msg = MIMEText(body)
+    msg['Subject'] = subject
+    msg['From'] = SMTP_EMAIL
+    msg['To'] = to_email
+
+    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+        server.starttls()
+        server.login(SMTP_EMAIL, SMTP_PASSWORD)
+        server.send_message(msg)
+
+
+@auth.route('/reset_password', methods=['POST'])
+def reset_password():
+    data = request.json
+    email = data.get("email")
+
+    if not email:
+        return jsonify({'error': 'Email is required'}), 400
+
+    # בדוק אם המשתמש קיים
+    user = users_collection.find_one({'email': email})
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    # צור סיסמה חדשה
+    new_password = generate_random_password()
+    hashed_password = hash_password(new_password)
+
+    # עדכן את הסיסמה במסד
+    users_collection.update_one(
+        {'email': email},
+        {'$set': {'password_hash': hashed_password}}
+    )
+
+    # שלח את הסיסמה החדשה במייל
+    try:
+        send_email(email, new_password)
+        return jsonify({'message': 'New password sent to email'}), 200
+    except Exception as e:
+        print("Email error:", e)
+        return jsonify({'error': 'Failed to send email'}), 500

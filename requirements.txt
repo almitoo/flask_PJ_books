@@ -11,8 +11,8 @@ sentencepiece
 huggingface_hub[cli]
 flask-cors
 requests
-diffusers
-transformers
+# diffusers
+# transformers
 accelerate
 torch
 torchvision
@@ -23,3 +23,4 @@ python-dotenv
 gtts
 firebase_admin
 google-genai>=1.0.0
+Pillow

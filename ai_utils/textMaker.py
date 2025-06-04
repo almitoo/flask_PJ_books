@@ -8,7 +8,7 @@ def makeTextAI(promt):
     apiKey = os.getenv("API_KEY")
     genai.configure(api_key=apiKey)
 
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-2.0-flash')
     response = model.generate_content(promt)
     return response.text
         

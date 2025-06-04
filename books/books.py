@@ -65,3 +65,29 @@ def get_user_books():
         })
 
     return jsonify({"books": books_list}), 200
+
+
+@books.route("/create_book_from_ai_utils", methods=["POST"])
+@jwt_required()
+def create_book_from_ai_utils(jsonBookData):
+    email = get_jwt_identity()
+    user = users_collection.find_one({"email": email})
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+    title = jsonBookData.get("title")
+    author = jsonBookData.get("author", user["full_name"])
+    pages = jsonBookData.get("pages", {})
+    description = jsonBookData.get("description" , "")
+    if not title or not pages:
+        return jsonify({"message": "Missing title or pages"}), 400
+    book = {
+        "title": title,
+        "author": author,
+        "description" :description,
+        "user_id": user["_id"],
+        "created_at": datetime.datetime.utcnow(),
+        "num_pages": len(pages),
+        "pages": pages
+    }
+    result = books_collection.insert_one(book)
+    print(f"Book created successfully in the DB , {str(result.inserted_id)}")

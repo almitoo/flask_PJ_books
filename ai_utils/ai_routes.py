@@ -1,4 +1,5 @@
 from flask import Blueprint, request, url_for, jsonify, send_file
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from ai_utils.qualityEnum import imageQuality
 from ai_utils.textMaker import makeTextAI
 from ai_utils import childrenStoryMaker as child
@@ -7,6 +8,8 @@ from ai_utils import voiceMaker
 from ai_utils.memoryManager import initialize_app
 from ai_utils import exceptionHandler as ex
 from google.api_core.exceptions import ResourceExhausted
+
+from books.books import create_book_from_ai_utils
 
 ai_story = Blueprint("ai_story", __name__)
 
@@ -97,7 +100,9 @@ def create_new_story():
         #optional value , don't raise exception
         pages_texts_list = list(data.get("story_pages",[]))
         story_obj = child.Story(subject , numPages, auther , description,title, pages_texts_list , enable_voice)
-        return jsonify(story_obj.to_dict())
+        jsonBook = story_obj.to_dict()
+        create_book_from_ai_utils(jsonBook)
+        return jsonify(jsonBook)
 
     except KeyError as e:
         return ex.exception_json_value(e)
@@ -111,6 +116,7 @@ def create_new_story():
 # מחזירה את הסיפור החדש כאוביקט גיסון
 # הפונקציה נותנת מענה לפיצר השלישי
 @ai_story.route('/MagicOfStory/Story/Sequel',methods=['POST'])
+@jwt_required()
 def create_new_story_sequel():
     global staticNumIdPic
     data = request.get_json()  # Get JSON data from the request body
@@ -125,17 +131,18 @@ def create_new_story_sequel():
         pages_previous = list(data["pages_previous"])
         title_previous = str(data["title_previous"])
 
-        story_obj = child.Continued_story(numPages,auther,description,title ,staticNumIdPic,pages_previous,title_previous ,make_voice=enable_voice)
+        story_obj = child.Continued_story(numPages,auther,description,title ,pages_previous,title_previous ,enable_voice)
         staticNumIdPic+=numPages
-        return jsonify(story_obj.to_dict())
-
+        jsonBook = story_obj.to_dict()
+        create_book_from_ai_utils(jsonBook)
+        return jsonify(jsonBook)
 
     except KeyError as e:
         return ex.exception_json_value(e)
     except ResourceExhausted as e:
         return ex.exception_ResourceExhausted(e)
-    except Exception as e:
-        return ex.exception_internal_server_issue(e)
+    # except Exception as e:
+    #     return ex.exception_internal_server_issue(e)
 # מקבלת טקסט של עמוד מהסיפור
 # ויוצרת קובץ קול בעזרת הפונקציה
 # voiceMaker.newVoiceFile
