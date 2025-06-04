@@ -114,7 +114,7 @@ def makeImageFromImage(prompt  ,url_image_source):
     client = genai.Client(api_key=apiKey)
 
     #adding resulotion and consistent
-    promt +="making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects].,4K "
+    prompt +="making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects].,4K "
 
     # Load image from URL
     response = requests.get(url_image_source)

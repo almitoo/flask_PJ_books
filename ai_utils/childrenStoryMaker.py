@@ -199,7 +199,7 @@ class Story():
 class Continued_story(Story):
     def __init__(self,numPages, auther, description, title
                  ,previous_book_pages  ,previous_book_title
-                , make_voice=True ):
+                , make_voice):
         #part 1 finds out what the previous story was
         previous_book_story = previous_book_title +"\n"
         for page_bool_previous in previous_book_pages:
@@ -222,11 +222,13 @@ class Continued_story(Story):
         story = t.makeTextAI(f'''
     You are currently a children's writer who is required to write a children's book 
     You are making a sequel story, here is the text of the previous story: {previous_book_story}
-    You are required to write {numPages} pages with each page no more than 150 words
+    You are required to write {numPages} pages of story
     Return the respond as follow:
     Page 1: Text of page 1
     Page 2: Text of page 2
     And so on
+    don't add text on top of the instruction
+    just in format i show you
     ''')
             
         print (f"story  = {story}")
@@ -235,14 +237,21 @@ class Continued_story(Story):
  
         #save value of the first image to base the rest of the images on that
         url_first_image =''
+        images_prompts =[]
         for i in range(numPages):
 
             inputText = f'make an image prompt for children story according to this text not longer then 15 words {pages_text[i]}'
             inputText = t.makeTextAI(inputText)
-            while (len(inputText )>50):
-                inputText = f'make an image ai prompt for children story according to this text not longer then 15 words {pages_text[i]}'
-                inputText = t.makeTextAI(inputText)
+            if (i>0):
+                cumulative_image_prompts = ' '.join([prompt for prompt in images_prompts])
+                previous_story_pages = ' '.join([pages_text[j] for j in range(i)])
+                inputText += f'\n making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects]. The image should reflect a coherent world and preserve recurring elements seen in previous images. Focus on relevant features , e.g., expression, background setting, lighting and characters. \n here is the previous story pages for refrence {previous_story_pages}\n and here is the previous story pages images prompts for refrence: {cumulative_image_prompts}'
+            
+            print(inputText)
+
             pathImage = None
+            
+            images_prompts.append(inputText)
             if i==0:
                 pathImage = imageAIMaker.makeImageAI(inputText)
                 url_first_image = str(pathImage)

@@ -99,6 +99,7 @@ def create_new_story():
         return ex.exception_internal_server_issue(e)
 
 @ai_story.route('/MagicOfStory/Story/Sequel',methods=['POST'])
+@jwt_required()
 def create_new_story_sequel():
     global staticNumIdPic
     data = request.get_json()  # Get JSON data from the request body
@@ -113,17 +114,19 @@ def create_new_story_sequel():
         pages_previous = list(data["pages_previous"])
         title_previous = str(data["title_previous"])
 
-        story_obj = child.Continued_story(numPages,auther,description,title ,staticNumIdPic,pages_previous,title_previous ,make_voice=enable_voice)
+        story_obj = child.Continued_story(numPages,auther,description,title ,pages_previous,title_previous ,enable_voice)
         staticNumIdPic+=numPages
-        return jsonify(story_obj.to_dict())
+        jsonBook = story_obj.to_dict()
+        create_book_from_ai_utils(jsonBook)
+        return jsonify(jsonBook)
 
 
     except KeyError as e:
         return ex.exception_json_value(e)
     except ResourceExhausted as e:
         return ex.exception_ResourceExhausted(e)
-    except Exception as e:
-        return ex.exception_internal_server_issue(e)
+    # except Exception as e:
+    #     return ex.exception_internal_server_issue(e)
 
 @ai_story.route('/MagicOfStory/voice',methods=['POST'])
 def make_new_text_to_speach():

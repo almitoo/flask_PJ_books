@@ -20,5 +20,9 @@ if __name__ == "__main__":
 
     #התקנה של פיירבאס רק להרצה , ברגע שתוריד את הפייבאס תוריד את השורה הזו 
     initialize_app()
+
+    # for rule in app.url_map.iter_rules():
+    #     print(rule)
+
     app.run(host="0.0.0.0", port=5000, debug=True)
 
