@@ -70,6 +70,7 @@ class Story():
 # אם אין כותרת הAI ימציא כותרת
 # מייצר תמונה וקובץ קול
 # כל הנתונים נשמרים כאוביקט page
+
     def story_media_maker(
             self ,
             subject: str,
@@ -101,6 +102,7 @@ class Story():
                 cumulative_image_prompts = ' '.join([prompt for prompt in images_prompts])
                 previous_story_pages = ' '.join([pages_texts_list[j] for j in range(i)])
                 inputText += f'\n making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects]. The image should reflect a coherent world and preserve recurring elements seen in previous images. Focus on relevant features , e.g., expression, background setting, lighting and characters. \n here is the previous story pages for refrence {previous_story_pages}\n and here is the previous story pages images prompts for refrence: {cumulative_image_prompts}'
+            
             print(inputText)
 
             inputText = t.makeTextAI(inputText)
@@ -123,7 +125,7 @@ class Story():
             voice_file_url = None
             if make_voice:
                 voice_file_url = newVoiceFile(pages_texts_list[i],f"{title}_page{i}_voice")
-            self.pages.append(page(pages_texts_list[i] , pathImage,voice_file_url)) 
+            self.pages.append(page(pages_texts_list[i] , pathImage,voice_file_url))
 
         
 # נשתמש בה כאשר המשתמש לא שלח טקסט עמודים
@@ -132,6 +134,7 @@ class Story():
 # מפצל את העמודים בעזרת
 # storyTextSplit
 # עבוא כל עמוד מייצר תמונה וקובץ קול
+
     def AI_story_maker(
             self ,
             subject: str,
@@ -186,7 +189,7 @@ class Story():
             voice_file_url = None
             if make_voice:
                 voice_file_url = newVoiceFile(pages_text[i],f"{title}_page{i}_voice")
-            self.pages.append(page(pages_text[i] , pathImage,voice_file_url)) 
+            self.pages.append(page(pages_text[i] , pathImage,voice_file_url))
 
         
     # # מחזירה את הסיפור כdict
@@ -212,10 +215,11 @@ class Story():
 
 # מטרת המחלקה ליצור סיפור המשך לסיפור קיים
 # היא מקבלת את מספר העמודים, שם המחבר, תיאור, כותרת, עמודים של הספר הקודם וכותרת הספר הקודם
+
 class Continued_story(Story):
     def __init__(self,numPages, auther, description, title
                  ,previous_book_pages  ,previous_book_title
-                , make_voice=True ):
+                , make_voice):
         #part 1 finds out what the previous story was
         previous_book_story = previous_book_title +"\n"
         for page_bool_previous in previous_book_pages:
@@ -254,23 +258,20 @@ class Continued_story(Story):
         #save value of the first image to base the rest of the images on that
         url_first_image =''
         images_prompts =[]
-
         for i in range(numPages):
 
             inputText = f'make an image prompt for children story according to this text not longer then 15 words {pages_text[i]}'
             inputText = t.makeTextAI(inputText)
-            # while (len(inputText )>50):
-            #     inputText = f'make an image ai prompt for children story according to this text not longer then 15 words {pages_text[i]}'
-            #     inputText = t.makeTextAI(inputText)
             if (i>0):
                 cumulative_image_prompts = ' '.join([prompt for prompt in images_prompts])
                 previous_story_pages = ' '.join([pages_text[j] for j in range(i)])
                 inputText += f'\n making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects]. The image should reflect a coherent world and preserve recurring elements seen in previous images. Focus on relevant features , e.g., expression, background setting, lighting and characters. \n here is the previous story pages for refrence {previous_story_pages}\n and here is the previous story pages images prompts for refrence: {cumulative_image_prompts}'
-
+            
             print(inputText)
-            pathImage = None
-            images_prompts.append(inputText)
 
+            pathImage = None
+            
+            images_prompts.append(inputText)
             if i==0:
                 pathImage = ai_utils.imageAIMaker.makeImageAI(inputText)
                 url_first_image = str(pathImage)

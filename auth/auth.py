@@ -76,7 +76,8 @@ def login():
     data = request.json
     email = data.get("email")
     password = data.get("password")
-
+    if not email or not password:
+        return jsonify({"message": "All fields are required"}), 400
     user = users_collection.find_one({"email": email})
     if not user or not check_password_hash(user["password_hash"], password):
         return jsonify({"message": "Invalid credentials"}), 401

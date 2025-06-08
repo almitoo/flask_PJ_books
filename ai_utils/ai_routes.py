@@ -8,6 +8,7 @@ from ai_utils import voiceMaker
 from ai_utils.memoryManager import initialize_app
 from ai_utils import exceptionHandler as ex
 from google.api_core.exceptions import ResourceExhausted
+from db import books_collection, users_collection 
 
 from books.books import create_book_from_ai_utils
 
@@ -85,9 +86,16 @@ def create_new_AI_text():
 # מחזירה את הסיפור כאוביקט גיסון
 # הפונקציה נותנת מענה לפיצר הראשון והשני
 @ai_story.route('/MagicOfStory/Story', methods=['POST'])
+#add for create the book in the mongoDB Yam 
+@jwt_required()
 def create_new_story():
     global staticNumIdPic
     data = request.get_json()  # Get JSON data from the request body
+    email = get_jwt_identity()
+    user = users_collection.find_one({"email": email})
+
+    if not user:
+        return jsonify({"message": "User not found"}), 404
     if not data:
         return ex.exception_no_json()
     try:
@@ -100,8 +108,9 @@ def create_new_story():
         #optional value , don't raise exception
         pages_texts_list = list(data.get("story_pages",[]))
         story_obj = child.Story(subject , numPages, auther , description,title, pages_texts_list , enable_voice)
+        #add story to DB
         jsonBook = story_obj.to_dict()
-        create_book_from_ai_utils(jsonBook)
+        create_book_from_ai_utils(jsonBook, user)
         return jsonify(jsonBook)
 
     except KeyError as e:
@@ -136,6 +145,7 @@ def create_new_story_sequel():
         jsonBook = story_obj.to_dict()
         create_book_from_ai_utils(jsonBook)
         return jsonify(jsonBook)
+
 
     except KeyError as e:
         return ex.exception_json_value(e)

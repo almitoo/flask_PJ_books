@@ -43,11 +43,14 @@ from dotenv import load_dotenv
 
 #version 2 with google gemini
 
+
 def makeImageAI(promt):
     load_dotenv(override= True)
     apiKey = getenv("API_KEY")
     client = genai.Client(api_key=apiKey)
-    
+
+
+    #adding resulotion
     promt +=",4K"
     contents = (promt)
 
@@ -112,7 +115,10 @@ def makeImageFromImage(prompt  ,url_image_source):
     load_dotenv(override= True)
     apiKey = getenv("API_KEY")
     client = genai.Client(api_key=apiKey)
+
+    #adding resulotion and consistent
     prompt +="making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects].,4K "
+
     # Load image from URL
     response = requests.get(url_image_source)
     response.raise_for_status()  # Raise an error for bad responses
