@@ -6,6 +6,8 @@ werkzeug
 Flask
 flask-cors
 requests
+# diffusers
+# transformers
 accelerate
 google-generativeai
 hf_xet
@@ -15,3 +17,4 @@ gtts
 firebase_admin
 google-genai>=1.0.0
 Pillow
+bcrypt

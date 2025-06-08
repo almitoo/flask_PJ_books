@@ -10,7 +10,9 @@ from books.books import create_book_from_ai_utils
 ai_story = Blueprint("ai_story", __name__)
 
 staticNumIdPic = 0
-
+# מקבלת טקסט שמתאר סצנה בסיפור ילדים שולחת את הטקסט  לפונקציית
+# maketextai
+# מחזירה קישור לתמונה שנוצרה על ידי הAI
 @ai_story.route('/MagicOfStory/ImageAI', methods=['POST'])
 def create_new_AI_image():
     global staticNumIdPic
@@ -32,7 +34,10 @@ def create_new_AI_image():
         return ex.exception_ResourceExhausted(e)
     except Exception as e:
         return ex.exception_internal_server_issue(e)
-
+# מקבלת טקסט וכתובת של תמונה קיימת
+# מנסה ליצור תמונה חדשה מבוססת על הקודמת בעזרת הפונקציה
+# makeImageFromImage
+# מחזירה קישור לתמונה החדשה
 @ai_story.route('/MagicOfStory/ImageFromImage', methods=['POST'])
 def create_new_AI_image_from_image():
     data = request.get_json()  # Get JSON data from the request body
@@ -52,7 +57,9 @@ def create_new_AI_image_from_image():
         return ex.exception_ResourceExhausted(e)
     except Exception as e:
         return ex.exception_internal_server_issue(e)
-
+# שולחת את האינפוט לפונקציית
+# maketextai
+# שמייצר את הטקסט ומחזיר אותו
 @ai_story.route('/MagicOfStory/Text', methods=['POST'])
 def create_new_AI_text():
     data = request.get_json()  # Get JSON data from the request body
@@ -97,7 +104,11 @@ def create_new_story():
         return ex.exception_ResourceExhausted(e)
     except Exception as e:
         return ex.exception_internal_server_issue(e)
-
+# מייצרת סיפור המשך לסיפור קיים
+# יוצרת סיפור חדש דרך
+# child.Continued_story
+# מחזירה את הסיפור החדש כאוביקט גיסון
+# הפונקציה נותנת מענה לפיצר השלישי
 @ai_story.route('/MagicOfStory/Story/Sequel',methods=['POST'])
 @jwt_required()
 def create_new_story_sequel():
@@ -114,6 +125,7 @@ def create_new_story_sequel():
         pages_previous = list(data["pages_previous"])
         title_previous = str(data["title_previous"])
 
+        story_obj = child.Continued_story(numPages,auther,description,title ,pages_previous,title_previous ,enable_voice)
         story_obj = child.Continued_story(numPages,auther,description,title ,pages_previous,title_previous ,enable_voice)
         staticNumIdPic+=numPages
         jsonBook = story_obj.to_dict()

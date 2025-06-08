@@ -1,3 +1,8 @@
+from email.mime.text import MIMEText
+import random
+import smtplib
+import string
+import bcrypt
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
@@ -17,6 +22,9 @@ def signup():
     full_name = data.get("full_name", "").strip()
     mobile = data.get("mobile", "").strip()
     genres = data.get("genres",[])
+    bio = data.get("bio", "")
+    location = data.get("location", "")
+    image_base64 = data.get("image_base64", "")
     bio = data.get("bio", "")
     location = data.get("location", "")
     image_base64 = data.get("image_base64", "")
@@ -51,11 +59,23 @@ def signup():
         "genres": genres,
         "bio": bio,
         "location": location,
+        "image_base64": image_base64,
+        "genres": genres,
+        "bio": bio,
+        "location": location,
         "image_base64": image_base64
     }
     users_collection.insert_one(user)
     token = create_access_token(identity=email, expires_delta=datetime.timedelta(hours=1))
 
+    return jsonify({
+        "message": "User registered successfully",
+        "token": token,
+        "userId": str(user["_id"]),
+        "full_name": str(user["full_name"]),
+        "bio": user["bio"],
+        "location": user["location"],
+        "image_base64": user["image_base64"]}), 201
     return jsonify({
         "message": "User registered successfully",
         "token": token,
@@ -85,6 +105,10 @@ def login():
         "message": "Login successful",
         "token": token,
         "userId": str(user["_id"]),
+        "full_name": str(user["full_name"]),
+        "bio": str(user["bio"]),
+        "location": str(user["location"]),
+        "image_base64": str(user["image_base64"]),
         "full_name": str(user["full_name"]),
         "bio": str(user["bio"]),
         "location": str(user["location"]),
