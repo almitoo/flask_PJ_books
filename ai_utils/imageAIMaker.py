@@ -68,9 +68,9 @@ def makeImageAI(promt):
         if part.text is not None:
             print(part.text)
         elif part.inline_data is not None:
-            # image = Image.open(BytesIO((part.inline_data.data)))
-            image_bytes = base64.b64decode(part.inline_data.data)
-            image = Image.open(BytesIO(image_bytes))
+            image = Image.open(BytesIO((part.inline_data.data)))
+            #image_bytes = base64.b64decode(part.inline_data.data)
+            #image = Image.open(BytesIO(image_bytes))
             image.save(fileName)
             print(f"image saved as {fileName}")
             picInclude =True
@@ -144,9 +144,9 @@ def makeImageFromImage(prompt  ,url_image_source):
         if part.text is not None:
             print(part.text)
         elif part.inline_data is not None:
-            # image = Image.open(BytesIO(part.inline_data.data))
-            image_bytes = base64.b64decode(part.inline_data.data)
-            image = Image.open(BytesIO(image_bytes))
+            #image_bytes = base64.b64decode(part.inline_data.data)
+            #image = Image.open(BytesIO(image_bytes))
+            image = Image.open(BytesIO(part.inline_data.data))
             image.save(fileName)
             print(f"image saved as {fileName}")
             picInclude = True
