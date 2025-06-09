@@ -43,7 +43,7 @@ from dotenv import load_dotenv
 
 #version 2 with google gemini
 
-def makeImageAI(promt):
+def makeImageAI(promt , resolution = ""):
     load_dotenv(override= True)
     apiKey = getenv("API_KEY")
     client = genai.Client(api_key=apiKey)
@@ -69,9 +69,15 @@ def makeImageAI(promt):
             print(part.text)
         elif part.inline_data is not None:
             image = Image.open(BytesIO((part.inline_data.data)))
+            if resolution != "":    
+                # Resize to 1024x570 pixels
+                image= image.resize(turnStringintoResolution(resolution))
             #image_bytes = base64.b64decode(part.inline_data.data)
             #image = Image.open(BytesIO(image_bytes))
             image.save(fileName)
+            print("image size \n\n\n")
+            print(image.size)
+            print("\n\n\n\n")
             print(f"image saved as {fileName}")
             picInclude =True
     if picInclude :
@@ -108,7 +114,7 @@ def makeImageAI(promt):
 
 #version 2 google gemini
 
-def makeImageFromImage(prompt  ,url_image_source):
+def makeImageFromImage(prompt  ,url_image_source ,resolution = ""):
     #apiKey
 
     load_dotenv(override= True)
@@ -148,13 +154,58 @@ def makeImageFromImage(prompt  ,url_image_source):
             #image = Image.open(BytesIO(image_bytes))
             image = Image.open(BytesIO(part.inline_data.data))
             image.save(fileName)
+            if resolution != "":    
+                # Resize to pixels
+                image= image.resize(turnStringintoResolution(resolution))
+
+            print("image size \n\n\n")
+
+
+            print(image.size)
+            print("\n\n\n\n")
             print(f"image saved as {fileName}")
             picInclude = True
     if picInclude :
         return memoryManager.save_file(fileName ,fileType.png)
     else:
-        return None
+        response = client.models.generate_content(
+        model="gemini-2.0-flash-preview-image-generation",
+        contents=[text_input, image],
+        config=types.GenerateContentConfig(
+        response_modalities=['TEXT', 'IMAGE']
+        )
+    )
+    picInclude = False
 
+    for part in response.candidates[0].content.parts:
+        if part.text is not None:
+            print(part.text)
+        elif part.inline_data is not None:
+            #image_bytes = base64.b64decode(part.inline_data.data)
+            #image = Image.open(BytesIO(image_bytes))
+            image = Image.open(BytesIO(part.inline_data.data))
+            image.save(fileName)
+            if resolution != "":    
+                # Resize to pixels
+                image= image.resize(turnStringintoResolution(resolution))
+
+            print("image size \n\n\n")
+
+
+            print(image.size)
+            print("\n\n\n\n")
+            print(f"image saved as {fileName}")
+            return memoryManager.save_file(fileName ,fileType.png)
+
+
+def turnStringintoResolution(str_res : str):
+    str_res = str_res.lower()
+    resolution = []
+    slice_place = str_res.find('x')
+    resolution.append(int(str_res[0:slice_place]))
+    resolution.append(int(str_res[slice_place+1:len(str_res)]))
+    print(resolution)
+    return (resolution[0] , resolution[1])
 
 #version 1 Stable Diffusion not Rellvant
 
