@@ -56,15 +56,16 @@ class Story():
         description: str,
         title: str,
         pages_texts_list:  list |None,
-        make_voice: bool):
+        make_voice: bool,
+        resolution:str):
         
         # no text inclued = complete AI story
         if len(pages_texts_list)==0:
-           self.AI_story_maker(subject,numPages,auther,description,title,make_voice)
+           self.AI_story_maker(subject,numPages,auther,description,title,make_voice,resolution)
         #pages= story from the user 
         else:
             print("making a new story , pages has been have by the user.")
-            self.story_media_maker(subject,numPages,auther,description,title,make_voice,pages_texts_list)
+            self.story_media_maker(subject,numPages,auther,description,title,make_voice,pages_texts_list,resolution)
         print("story has been complete \n\n")
 # נשתמש בה כאשר המשתמש שלח כבר טקסט של הסיפור
 # אם אין כותרת הAI ימציא כותרת
@@ -78,7 +79,8 @@ class Story():
             description: str,
             title: str,
             make_voice : bool,
-            pages_texts_list : list):
+            pages_texts_list : list,
+            resolution: str):
         
         self.numPages = numPages
         self.description = description
@@ -96,7 +98,7 @@ class Story():
         images_prompts =[]
         for i in range(numPages):
 
-            inputText = f'make an image prompt for children story according to this text not longer then 15 words {pages_texts_list[i]} , the subject of the story :{subject} '
+            inputText = f'make an image prompt for children story according to this text {pages_texts_list[i]} , the subject of the story :{subject} '
             if (i>0):
                 cumulative_image_prompts = ' '.join([prompt for prompt in images_prompts])
                 previous_story_pages = ' '.join([pages_texts_list[j] for j in range(i)])
@@ -109,12 +111,12 @@ class Story():
             pathImage = None
             if i==0:
                 #pathImage = f"{title}_page{i}_pic"
-                pathImage = ai_utils.imageAIMaker.makeImageAI(inputText)
+                pathImage = ai_utils.imageAIMaker.makeImageAI(inputText,resolution=resolution)
                 url_first_image = str(pathImage)
             else:
                 
                 #pathImage = f"{title}_page{i}_pic"
-                pathImage = ai_utils.imageAIMaker.makeImageFromImage(inputText ,url_first_image)
+                pathImage = ai_utils.imageAIMaker.makeImageFromImage(inputText ,url_first_image,resolution=resolution)
             
             images_prompts.append(inputText)
 
@@ -140,7 +142,8 @@ class Story():
             auther: str,
             description: str,
             title: str,
-            make_voice : bool):
+            make_voice : bool,
+            resolution : str):
         
         self.numPages = numPages
         self.description = description
@@ -175,7 +178,7 @@ class Story():
 
         for i in range(numPages):
 
-            inputText = f'make an image prompt for children story according to this text not longer then 15 words {pages_text[i]}'
+            inputText = f'make an image prompt for children story according to this text  {pages_text[i]}'
             if (i>0):
                 cumulative_image_prompts = ' '.join([prompt for prompt in images_prompts])
                 previous_story_pages = ' '.join([pages_text[j] for j in range(i)])
@@ -188,10 +191,10 @@ class Story():
             images_prompts.append(inputText)
             pathImage = None
             if i==0:
-                pathImage = ai_utils.imageAIMaker.makeImageAI(inputText)
+                pathImage = ai_utils.imageAIMaker.makeImageAI(inputText,resolution=resolution)
                 url_first_image = str(pathImage)
             else:
-                pathImage = ai_utils.imageAIMaker.makeImageFromImage(inputText ,url_first_image)
+                pathImage = ai_utils.imageAIMaker.makeImageFromImage(inputText ,url_first_image,resolution=resolution)
             #no rellevant: move from  stable diffusion to gemini
             #pathImage = imageAIMaker.makeImageAI(inputText , steps , height_images  , width_images , staticNumIdPic)
             #staticNumIdPic+=1
@@ -227,7 +230,7 @@ class Story():
 class Continued_story(Story):
     def __init__(self,numPages, auther, description, title
                  ,previous_book_pages  ,previous_book_title
-                , make_voice):
+                , make_voice,resolution):
         #part 1 finds out what the previous story was
         previous_book_story = previous_book_title +"\n"
         for page_bool_previous in previous_book_pages:
@@ -271,7 +274,7 @@ class Continued_story(Story):
         images_prompts =[]
         for i in range(numPages):
 
-            inputText = f'make an image prompt for children story according to this text not longer then 15 words {pages_text[i]}'
+            inputText = f'make an image prompt for children story according to this text {pages_text[i]}'
             inputText = t.makeTextAI(inputText)
             if (i>0):
                 cumulative_image_prompts = ' '.join([prompt for prompt in images_prompts])
@@ -284,10 +287,10 @@ class Continued_story(Story):
             
             images_prompts.append(inputText)
             if i==0:
-                pathImage = ai_utils.imageAIMaker.makeImageAI(inputText)
+                pathImage = ai_utils.imageAIMaker.makeImageAI(inputText,resolution=resolution)
                 url_first_image = str(pathImage)
             else:
-                pathImage = ai_utils.imageAIMaker.makeImageFromImage(inputText ,url_first_image)
+                pathImage = ai_utils.imageAIMaker.makeImageFromImage(inputText ,url_first_image,resolution=resolution)
             #no rellevant: move from  stable diffusion to gemini
             #pathImage = imageAIMaker.makeImageAI(inputText , steps , height_images  , width_images , staticNumIdPic)
             #staticNumIdPic+=1

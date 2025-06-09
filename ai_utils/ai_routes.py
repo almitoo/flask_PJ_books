@@ -9,22 +9,20 @@ from google.api_core.exceptions import ResourceExhausted
 from books.books import create_book_from_ai_utils
 ai_story = Blueprint("ai_story", __name__)
 
-staticNumIdPic = 0
 # מקבלת טקסט שמתאר סצנה בסיפור ילדים שולחת את הטקסט  לפונקציית
 # maketextai
 # מחזירה קישור לתמונה שנוצרה על ידי הAI
 @ai_story.route('/MagicOfStory/ImageAI', methods=['POST'])
 def create_new_AI_image():
-    global staticNumIdPic
-    staticNumIdPic+=1
     data = request.get_json()  # Get JSON data from the request body
     if not data:
         return ex.exception_no_json()
     
     try:
         textPage = str(data["Text"])
+        resolution = str(data["resolution"])
         promptPhoto  = makeTextAI("please give me a promt for the AI image generator for this children story text:"+textPage+" try to pay attention to details of the photo")
-        pathImage = imageAIMaker.makeImageAI(promptPhoto)
+        pathImage = imageAIMaker.makeImageAI(promptPhoto ,resolution)
         print("send the file to the user")
         return jsonify({"link":pathImage}), 200  # Handle missing JSON
 
@@ -32,8 +30,8 @@ def create_new_AI_image():
         return ex.exception_json_value(e)
     except ResourceExhausted as e:
         return ex.exception_ResourceExhausted(e)
-    except Exception as e:
-        return ex.exception_internal_server_issue(e)
+    # except Exception as e:
+    #     return ex.exception_internal_server_issue(e)
 # מקבלת טקסט וכתובת של תמונה קיימת
 # מנסה ליצור תמונה חדשה מבוססת על הקודמת בעזרת הפונקציה
 # makeImageFromImage
@@ -90,9 +88,12 @@ def create_new_story():
         description = str(data["description"])
         title = str(data["title"])
         enable_voice = bool(data["text_to_voice"])
+        resolution = str(data["resolution"])
+
+
         #optional value , don't raise exception
         pages_texts_list = list(data.get("story_pages",[]))
-        story_obj = child.Story(subject , numPages, auther , description,title, pages_texts_list , enable_voice)
+        story_obj = child.Story(subject , numPages, auther , description,title, pages_texts_list , enable_voice,resolution)
         #add story to DB
         jsonBook = story_obj.to_dict()
         create_book_from_ai_utils(jsonBook)
@@ -124,9 +125,8 @@ def create_new_story_sequel():
         enable_voice = bool(data["text_to_voice"])
         pages_previous = list(data["pages_previous"])
         title_previous = str(data["title_previous"])
-
-        story_obj = child.Continued_story(numPages,auther,description,title ,pages_previous,title_previous ,enable_voice)
-        story_obj = child.Continued_story(numPages,auther,description,title ,pages_previous,title_previous ,enable_voice)
+        resolution = str(data["resolution"])
+        story_obj = child.Continued_story(numPages,auther,description,title ,pages_previous,title_previous ,enable_voice,resolution)
         staticNumIdPic+=numPages
         jsonBook = story_obj.to_dict()
         create_book_from_ai_utils(jsonBook)
