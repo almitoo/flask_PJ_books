@@ -109,7 +109,7 @@ def create_new_story():
         pages_texts_list = list(data.get("story_pages",[]))
         story_obj = child.Story(subject , numPages, auther , description,title, pages_texts_list , enable_voice)
         #add story to DB
-        jsonBook = story_obj.to_dict()
+        jsonBook = story_obj.to_dict_new()
         create_book_from_ai_utils(jsonBook, user)
         return jsonify(jsonBook)
 
