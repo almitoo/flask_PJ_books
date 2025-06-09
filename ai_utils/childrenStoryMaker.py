@@ -223,7 +223,25 @@ class Story():
         self.pages[num_page].set_text_page(new_text)
     
 
-    
+        # בתוך child.Story
+    def to_dict_new(self):
+        return {
+            "title": self.title,
+            "author": self.auther,
+            "description": self.description,
+            "num_pages": self.numPages,
+            # cover_image = התמונה של העמוד הראשון (נוח ל-Flutter)
+            "cover_image": self.pages[0].img_url if self.pages else "",
+            "pages": [
+                {
+                    "text_page": p.text_page,
+                    "img_url":  p.img_url,
+                    "voice_file_url": p.voice_file_url or ""
+                }
+                for p in self.pages
+            ]
+        }
+
 
 # מטרת המחלקה ליצור סיפור המשך לסיפור קיים
 # היא מקבלת את מספר העמודים, שם המחבר, תיאור, כותרת, עמודים של הספר הקודם וכותרת הספר הקודם
