@@ -25,6 +25,9 @@ def signup():
     bio = data.get("bio", "")
     location = data.get("location", "")
     image_base64 = data.get("image_base64", "")
+    bio = data.get("bio", "")
+    location = data.get("location", "")
+    image_base64 = data.get("image_base64", "")
 
     if not full_name or not email or not password or not mobile:
         return jsonify({"message": "All fields are required"}), 400
@@ -56,6 +59,10 @@ def signup():
         "genres": genres,
         "bio": bio,
         "location": location,
+        "image_base64": image_base64,
+        "genres": genres,
+        "bio": bio,
+        "location": location,
         "image_base64": image_base64
     }
     users_collection.insert_one(user)
@@ -69,15 +76,25 @@ def signup():
         "bio": user["bio"],
         "location": user["location"],
         "image_base64": user["image_base64"]}), 201
+    return jsonify({
+        "message": "User registered successfully",
+        "token": token,
+        "userId": str(user["_id"]),
+        "full_name": str(user["full_name"]),
+        "bio": user["bio"],
+        "location": user["location"],
+        "image_base64": user["image_base64"]}), 201
 
 # 🔹 התחברות
 @auth.route("/login", methods=["POST"])
 def login():
     data = request.json
-    email = data.get("email")
-    password = data.get("password")
+    email = data.get("email","")
+    password = data.get("password","")
+
     if not email or not password:
         return jsonify({"message": "All fields are required"}), 400
+
     user = users_collection.find_one({"email": email})
     if not user or not check_password_hash(user["password_hash"], password):
         return jsonify({"message": "Invalid credentials"}), 401
@@ -91,8 +108,13 @@ def login():
         "full_name": str(user["full_name"]),
         "bio": str(user["bio"]),
         "location": str(user["location"]),
+        "image_base64": str(user["image_base64"]),
+        "full_name": str(user["full_name"]),
+        "bio": str(user["bio"]),
+        "location": str(user["location"]),
         "image_base64": str(user["image_base64"])
     })
+
 # 🔹 הבאת פרטי משתמש מחובר
 @auth.route("/user", methods=["GET"])
 @jwt_required()
@@ -181,58 +203,3 @@ def update_profile_image():
 
     
 
-SMTP_EMAIL = "amitishay@gmail.com"
-SMTP_PASSWORD = "fada mpym gfbj tszr"
-SMTP_SERVER = "smtp.gmail.com"
-SMTP_PORT = 587
-
-def generate_random_password(length=10):
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
-
-def hash_password(password):
-    return generate_password_hash(password)
-
-def send_email(to_email, new_password):
-    subject = "Your New Password"
-    body = f"Your new password is: {new_password}"
-    msg = MIMEText(body)
-    msg['Subject'] = subject
-    msg['From'] = SMTP_EMAIL
-    msg['To'] = to_email
-
-    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-        server.starttls()
-        server.login(SMTP_EMAIL, SMTP_PASSWORD)
-        server.send_message(msg)
-
-
-@auth.route('/reset_password', methods=['POST'])
-def reset_password():
-    data = request.json
-    email = data.get("email")
-
-    if not email:
-        return jsonify({'error': 'Email is required'}), 400
-
-    # בדוק אם המשתמש קיים
-    user = users_collection.find_one({'email': email})
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
-
-    # צור סיסמה חדשה
-    new_password = generate_random_password()
-    hashed_password = hash_password(new_password)
-
-    # עדכן את הסיסמה במסד
-    users_collection.update_one(
-        {'email': email},
-        {'$set': {'password_hash': hashed_password}}
-    )
-
-    # שלח את הסיסמה החדשה במייל
-    try:
-        send_email(email, new_password)
-        return jsonify({'message': 'New password sent to email'}), 200
-    except Exception as e:
-        print("Email error:", e)
-        return jsonify({'error': 'Failed to send email'}), 500
