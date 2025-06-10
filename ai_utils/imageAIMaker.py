@@ -68,12 +68,14 @@ def makeImageAI(promt , resolution = ""):
         if part.text is not None:
             print(part.text)
         elif part.inline_data is not None:
-            image = Image.open(BytesIO((part.inline_data.data)))
+            # image = Image.open(BytesIO((part.inline_data.data)))
+            image_bytes = base64.b64decode(part.inline_data.data)
+            image = Image.open(BytesIO(image_bytes))
             if resolution != "":    
                 # Resize to 1024x570 pixels
                 image= image.resize(turnStringintoResolution(resolution))
-            #image_bytes = base64.b64decode(part.inline_data.data)
-            #image = Image.open(BytesIO(image_bytes))
+            # image_bytes = base64.b64decode(part.inline_data.data)
+            # image = Image.open(BytesIO(image_bytes))
             image.save(fileName)
             print("image size \n\n\n")
             print(image.size)
@@ -150,9 +152,9 @@ def makeImageFromImage(prompt  ,url_image_source ,resolution = ""):
         if part.text is not None:
             print(part.text)
         elif part.inline_data is not None:
-            #image_bytes = base64.b64decode(part.inline_data.data)
-            #image = Image.open(BytesIO(image_bytes))
-            image = Image.open(BytesIO(part.inline_data.data))
+            image_bytes = base64.b64decode(part.inline_data.data)
+            image = Image.open(BytesIO(image_bytes))
+            # image = Image.open(BytesIO(part.inline_data.data))
             image.save(fileName)
             if resolution != "":    
                 # Resize to pixels
@@ -181,9 +183,9 @@ def makeImageFromImage(prompt  ,url_image_source ,resolution = ""):
         if part.text is not None:
             print(part.text)
         elif part.inline_data is not None:
-            #image_bytes = base64.b64decode(part.inline_data.data)
-            #image = Image.open(BytesIO(image_bytes))
-            image = Image.open(BytesIO(part.inline_data.data))
+            image_bytes = base64.b64decode(part.inline_data.data)
+            image = Image.open(BytesIO(image_bytes))
+            # image = Image.open(BytesIO(part.inline_data.data))
             image.save(fileName)
             if resolution != "":    
                 # Resize to pixels
