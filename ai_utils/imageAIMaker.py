@@ -53,37 +53,36 @@ def makeImageAI(promt , resolution = ""):
     promt +=",4K"
     contents = (promt)
 
-    response = client.models.generate_content(
-        model="gemini-2.0-flash-preview-image-generation",
-        contents=contents,
-        config=types.GenerateContentConfig(
-        response_modalities=['TEXT', 'IMAGE']
-        )
-    )
     picInclude = False
-    #make random image name
-    idPictuere = str(uuid.uuid4())[1:6]
-    fileName  = f'image {idPictuere}.png'
-    for part in response.candidates[0].content.parts:
-        if part.text is not None:
-            print(part.text)
-        elif part.inline_data is not None:
-            image = Image.open(BytesIO((part.inline_data.data)))
-            if resolution != "":    
-                # Resize to 1024x570 pixels
-                image= image.resize(turnStringintoResolution(resolution))
-            #image_bytes = base64.b64decode(part.inline_data.data)
-            #image = Image.open(BytesIO(image_bytes))
-            image.save(fileName)
-            print("image size \n\n\n")
-            print(image.size)
-            print("\n\n\n\n")
-            print(f"image saved as {fileName}")
-            picInclude =True
-    if picInclude :
-        return memoryManager.save_file(fileName ,fileType.png)
-    else:
-        return None
+    while ( picInclude == False):
+        response = client.models.generate_content(
+            model="gemini-2.0-flash-preview-image-generation",
+            contents=contents,
+            config=types.GenerateContentConfig(
+            response_modalities=['TEXT', 'IMAGE']
+            )
+        )
+        #make random image name
+        idPictuere = str(uuid.uuid4())[1:6]
+        fileName  = f'image {idPictuere}.png'
+        for part in response.candidates[0].content.parts:
+            if part.text is not None:
+                print(part.text)
+            elif part.inline_data is not None:
+                image = Image.open(BytesIO((part.inline_data.data)))
+                if resolution != "":    
+                    # Resize to 1024x570 pixels
+                    image= image.resize(turnStringintoResolution(resolution))
+                #image_bytes = base64.b64decode(part.inline_data.data)
+                #image = Image.open(BytesIO(image_bytes))
+                image.save(fileName)
+                print("image size \n\n\n")
+                print(image.size)
+                print("\n\n\n\n")
+                print(f"image saved as {fileName}")
+                picInclude =True
+        if picInclude :
+            return memoryManager.save_file(fileName ,fileType.png)
 
 # # # #version 1 Stable Diffusion not Rellvant
 # def makeImageFromImage(prompt, steps, height, width, idPictuere , url_image_source):
@@ -136,66 +135,39 @@ def makeImageFromImage(prompt  ,url_image_source ,resolution = ""):
     #file name
     idPictuere = str(uuid.uuid4())[1:6]
     fileName  = f'image {idPictuere}.png'
-
-    response = client.models.generate_content(
-        model="gemini-2.0-flash-preview-image-generation",
-        contents=[text_input, image],
-        config=types.GenerateContentConfig(
-        response_modalities=['TEXT', 'IMAGE']
-        )
-    )
     picInclude = False
 
-    for part in response.candidates[0].content.parts:
-        if part.text is not None:
-            print(part.text)
-        elif part.inline_data is not None:
-            #image_bytes = base64.b64decode(part.inline_data.data)
-            #image = Image.open(BytesIO(image_bytes))
-            image = Image.open(BytesIO(part.inline_data.data))
-            image.save(fileName)
-            if resolution != "":    
-                # Resize to pixels
-                image= image.resize(turnStringintoResolution(resolution))
-
-            print("image size \n\n\n")
-
-
-            print(image.size)
-            print("\n\n\n\n")
-            print(f"image saved as {fileName}")
-            picInclude = True
-    if picInclude :
-        return memoryManager.save_file(fileName ,fileType.png)
-    else:
+    while (not picInclude):
         response = client.models.generate_content(
-        model="gemini-2.0-flash-preview-image-generation",
-        contents=[text_input, image],
-        config=types.GenerateContentConfig(
-        response_modalities=['TEXT', 'IMAGE']
+            model="gemini-2.0-flash-preview-image-generation",
+            contents=[text_input, image],
+            config=types.GenerateContentConfig(
+            response_modalities=['TEXT', 'IMAGE']
+            )
         )
-    )
-    picInclude = False
 
-    for part in response.candidates[0].content.parts:
-        if part.text is not None:
-            print(part.text)
-        elif part.inline_data is not None:
-            #image_bytes = base64.b64decode(part.inline_data.data)
-            #image = Image.open(BytesIO(image_bytes))
-            image = Image.open(BytesIO(part.inline_data.data))
-            image.save(fileName)
-            if resolution != "":    
-                # Resize to pixels
-                image= image.resize(turnStringintoResolution(resolution))
+        for part in response.candidates[0].content.parts:
+            if part.text is not None:
+                print(part.text)
+            elif part.inline_data is not None:
+                #image_bytes = base64.b64decode(part.inline_data.data)
+                #image = Image.open(BytesIO(image_bytes))
+                image = Image.open(BytesIO(part.inline_data.data))
+                image.save(fileName)
+                if resolution != "":    
+                    # Resize to pixels
+                    image= image.resize(turnStringintoResolution(resolution))
 
-            print("image size \n\n\n")
+                print("image size \n\n\n")
 
 
-            print(image.size)
-            print("\n\n\n\n")
-            print(f"image saved as {fileName}")
+                print(image.size)
+                print("\n\n\n\n")
+                print(f"image saved as {fileName}")
+                picInclude = True
+        if picInclude :
             return memoryManager.save_file(fileName ,fileType.png)
+
 
 
 def turnStringintoResolution(str_res : str):
