@@ -1,35 +1,28 @@
 from flask import Blueprint, request, url_for, jsonify, send_file
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from ai_utils.qualityEnum import imageQuality
 from ai_utils.textMaker import makeTextAI
 from ai_utils import childrenStoryMaker as child
 from ai_utils import imageAIMaker
 from ai_utils import voiceMaker
-from ai_utils.memoryManager import initialize_app
 from ai_utils import exceptionHandler as ex
 from google.api_core.exceptions import ResourceExhausted
-from db import books_collection, users_collection 
-
 from books.books import create_book_from_ai_utils
-
 ai_story = Blueprint("ai_story", __name__)
 
-staticNumIdPic = 0
 # מקבלת טקסט שמתאר סצנה בסיפור ילדים שולחת את הטקסט  לפונקציית
 # maketextai
 # מחזירה קישור לתמונה שנוצרה על ידי הAI
 @ai_story.route('/MagicOfStory/ImageAI', methods=['POST'])
 def create_new_AI_image():
-    global staticNumIdPic
-    staticNumIdPic+=1
     data = request.get_json()  # Get JSON data from the request body
     if not data:
         return ex.exception_no_json()
     
     try:
         textPage = str(data["Text"])
+        resolution = str(data["resolution"])
         promptPhoto  = makeTextAI("please give me a promt for the AI image generator for this children story text:"+textPage+" try to pay attention to details of the photo")
-        pathImage = imageAIMaker.makeImageAI(promptPhoto)
+        pathImage = imageAIMaker.makeImageAI(promptPhoto ,resolution)
         print("send the file to the user")
         return jsonify({"link":pathImage}), 200  # Handle missing JSON
 
@@ -37,8 +30,8 @@ def create_new_AI_image():
         return ex.exception_json_value(e)
     except ResourceExhausted as e:
         return ex.exception_ResourceExhausted(e)
-    except Exception as e:
-        return ex.exception_internal_server_issue(e)
+    # except Exception as e:
+    #     return ex.exception_internal_server_issue(e)
 # מקבלת טקסט וכתובת של תמונה קיימת
 # מנסה ליצור תמונה חדשה מבוססת על הקודמת בעזרת הפונקציה
 # makeImageFromImage
@@ -79,23 +72,13 @@ def create_new_AI_text():
         return ex.exception_ResourceExhausted(e)
     except Exception as e:
         return ex.exception_internal_server_issue(e)
-# יוצרת אוביקט חדש של סיפור דרך
-# child.Story
-# היא יכולה להיעזר בטקסטים קיימים או לייצר חדשים לבד
-# הוא מייצר גם קול לטקסא
-# מחזירה את הסיפור כאוביקט גיסון
-# הפונקציה נותנת מענה לפיצר הראשון והשני
+# יצירת סיפור חדש מתאים לפיצר הראשון והשני, מקבל JSON    
 @ai_story.route('/MagicOfStory/Story', methods=['POST'])
 #add for create the book in the mongoDB Yam 
 @jwt_required()
 def create_new_story():
     global staticNumIdPic
     data = request.get_json()  # Get JSON data from the request body
-    email = get_jwt_identity()
-    user = users_collection.find_one({"email": email})
-
-    if not user:
-        return jsonify({"message": "User not found"}), 404
     if not data:
         return ex.exception_no_json()
     try:
@@ -105,9 +88,12 @@ def create_new_story():
         description = str(data["description"])
         title = str(data["title"])
         enable_voice = bool(data["text_to_voice"])
+        resolution = str(data["resolution"])
+
+
         #optional value , don't raise exception
         pages_texts_list = list(data.get("story_pages",[]))
-        story_obj = child.Story(subject , numPages, auther , description,title, pages_texts_list , enable_voice)
+        story_obj = child.Story(subject , numPages, auther , description,title, pages_texts_list , enable_voice,resolution)
         #add story to DB
         jsonBook = story_obj.to_dict_new()
         create_book_from_ai_utils(jsonBook, user)
@@ -139,8 +125,8 @@ def create_new_story_sequel():
         enable_voice = bool(data["text_to_voice"])
         pages_previous = list(data["pages_previous"])
         title_previous = str(data["title_previous"])
-
-        story_obj = child.Continued_story(numPages,auther,description,title ,pages_previous,title_previous ,enable_voice)
+        resolution = str(data["resolution"])
+        story_obj = child.Continued_story(numPages,auther,description,title ,pages_previous,title_previous ,enable_voice,resolution)
         staticNumIdPic+=numPages
         jsonBook = story_obj.to_dict()
         create_book_from_ai_utils(jsonBook)
@@ -153,10 +139,7 @@ def create_new_story_sequel():
         return ex.exception_ResourceExhausted(e)
     # except Exception as e:
     #     return ex.exception_internal_server_issue(e)
-# מקבלת טקסט של עמוד מהסיפור
-# ויוצרת קובץ קול בעזרת הפונקציה
-# voiceMaker.newVoiceFile
-# מחזירה את הקישור לקובץ הקול שנוצר
+
 @ai_story.route('/MagicOfStory/voice',methods=['POST'])
 def make_new_text_to_speach():
     data = request.get_json()  # Get JSON data from the request body
