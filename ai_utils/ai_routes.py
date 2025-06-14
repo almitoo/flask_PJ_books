@@ -88,7 +88,7 @@ def create_new_story():
         description = str(data["description"])
         title = str(data["title"])
         enable_voice = bool(data["text_to_voice"])
-        resolution = str(data["resolution"])
+        resolution = data.get("resolution" ,"")
 
 
         #optional value , don't raise exception
@@ -96,7 +96,7 @@ def create_new_story():
         story_obj = child.Story(subject , numPages, auther , description,title, pages_texts_list , enable_voice,resolution)
         #add story to DB
         jsonBook = story_obj.to_dict_new()
-        create_book_from_ai_utils(jsonBook, user)
+        create_book_from_ai_utils(jsonBook)
         return jsonify(jsonBook)
 
     except KeyError as e:
