@@ -49,6 +49,7 @@ def create_book_from_ai_utils(jsonBookData):
     title = jsonBookData.get("title")
     author = jsonBookData.get("author", user["full_name"])
     pages = jsonBookData.get("pages", {})
+    genre = jsonBookData.get("genre" ,"null")
     description = jsonBookData.get("description" , "")
 
     if not title or not pages:
@@ -62,6 +63,7 @@ def create_book_from_ai_utils(jsonBookData):
         "created_at": datetime.datetime.utcnow(),
         "num_pages": len(pages),
         "rating" : 0,
+        "genre" :genre,
         "pages": pages
     }
 
@@ -115,7 +117,6 @@ def get_top_pick():
 @books.route("/get_top_rated", methods=["GET"])
 def get_top_rated():
     #בוחר 4 ספרים עם הדירוג הגבוה ביותר מהדאטה בייס 
-
     books = books_collection.find().sort({"rating":-1 , "numPages":-1} )
     books_list = []
     lenght_collection = books_collection.count_documents({})-1
@@ -130,5 +131,18 @@ def get_top_rated():
             "pages": book.get("pages")
         })
     return jsonify({"books": books_list}), 200
+
+def change_genre_story(data , genre):
+    id = ObjectId(data['_id']['$oid'])
+    # חיפוש כל הספרים לפי user_id
+    bookObj = books_collection.find({"_id": id})
+
+    if not bookObj:
+        raise Exception(f"books is not found in mongo DB with id {id}")
+    newvalues = { "$set": { "genre": genre } }
+
+    books_collection.update_one({"_id":id},newvalues)
+    print(f"genere of book updated to {genre}")
+
 
 

@@ -5,6 +5,31 @@ import re
 
 
 
+def locateGenreOfStory(pages_text):
+    generes = [
+        "Fantasy",
+        "Adventure",
+        "Fairy Tales",
+        "Mystery",
+        "Bedtime Stories",
+        "Science Fiction",
+        "Romance",
+        "Horror",
+        "Non-Fiction",
+        "Biography",
+        "History",
+        "Thriller",
+            ]
+
+    prompt = f'''
+        you need to choose a genere for the books : {pages_text}\n 
+        the options are: {generes}\n
+        return the answer in this form only:
+        answer: the choosen genere
+        '''
+    text_output = t.makeTextAI(prompt)
+    print(f"ai answer on genere : {text_output}")
+    return str(text_output.split("answer:")[1].strip())
 
     
 # הפונקציה מקבלת טקסט של סיפור ילדים ומפרידה אותו לעמודים
@@ -78,6 +103,8 @@ class Story():
         else:
             print("making a new story , pages has been have by the user.")
             self.story_media_maker(subject,numPages,auther,description,title,make_voice,pages_texts_list,resolution)
+        pages_text = [page.get_text_page() for page in self.pages]
+        self.genre = locateGenreOfStory(pages_text)
         print("story has been complete \n\n")
 # נשתמש בה כאשר המשתמש שלח כבר טקסט של הסיפור
 # אם אין כותרת הAI ימציא כותרת
@@ -226,7 +253,8 @@ class Story():
             'numPages': self.numPages,
             'auther': self.auther,
             'description': self.description,
-            'title': self.title
+            'title': self.title,
+            'genre':self.genre
         }
         pages_dict = [page.to_dict() for page in self.pages]
         dict['pages'] = pages_dict
@@ -329,6 +357,7 @@ class Continued_story(Story):
             if make_voice:
                 voice_file_url = newVoiceFile(pages_text[i],f"{self.title}_page{i}_voice")
             self.pages.append(page(pages_text[i] , pathImage,voice_file_url)) 
+        self.genre = locateGenreOfStory(pages_text)
 
 
 
