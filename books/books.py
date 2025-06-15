@@ -4,6 +4,7 @@ from db import books_collection, users_collection
 from bson import ObjectId
 import datetime
 from random import randint
+from random import randint
 books = Blueprint("books", __name__)
 
 # 🔹 יצירת ספר חדש
@@ -30,6 +31,7 @@ def create_book():
         "user_id": user["_id"],
         "created_at": datetime.datetime.utcnow(),
         "num_pages": len(pages),
+        "rating": 0,
         "pages": pages
     }
 

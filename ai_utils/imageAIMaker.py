@@ -184,6 +184,8 @@ def turnStringintoResolution(str_res : str):
     print(resolution)
     return (resolution[0] , resolution[1])
 
+
+
 #version 1 Stable Diffusion not Rellvant
 
 # def makeImagesFromPrompts(prompts, steps, height, width, idPrefix, url_image_source):
