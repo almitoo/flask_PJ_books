@@ -99,7 +99,7 @@ def get_user_books():
 def get_top_pick():
 #בוחר 3 ספרים רנדומליים מהדאטה בייס 
     books = books_collection.find()
-    lenght_collection = books_collection.count_documents({})
+    lenght_collection = books_collection.count_documents({})-1
     books_list = []
     for i in range (3):
         book  = books[randint(0,lenght_collection)]
@@ -118,7 +118,7 @@ def get_top_rated():
 
     books = books_collection.find().sort({"rating":-1 , "numPages":-1} )
     books_list = []
-    lenght_collection = books_collection.count_documents({})
+    lenght_collection = books_collection.count_documents({})-1
     for i in range (4):
         book  = books[randint(0,lenght_collection)]
         books_list.append({
