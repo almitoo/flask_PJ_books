@@ -13,10 +13,15 @@ def storyTextSplit(text):
     matches = re.findall(r"\*\*Page \d+:\*\*.*?(?=(\*\*Page \d+:\*\*|$))", text, re.DOTALL)
     # Remove the first empty string if it exists, and strip whitespace
     arr = [page.strip() for page in matches if page.strip()]
-    print(f"\n\n\n\n{arr}\n\n\n\n")
+    print(arr)
     if (len(arr)==0):
         matches = re.split(r'(?=Page \d+:)', text)
         arr = [page.strip() for page in matches if page.strip()]
+        print(arr)
+    if (len(arr)==0):
+        arr = re.split(r'(Page \d+:)', text)
+        print(arr)
+
     return arr
 # # מחלקת page מייצגת עמוד בסיפור ילדים
 # כוללת טקסט , קישור לתמונה וקובץ קול
@@ -110,7 +115,7 @@ class Story():
             if (i>0):
                 cumulative_image_prompts = ' '.join([prompt for prompt in images_prompts])
                 previous_story_pages = ' '.join([pages_texts_list[j] for j in range(i)])
-                inputText += f'\n making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects]. The image should reflect a coherent world and preserve recurring elements seen in previous images. Focus on relevant features , e.g., expression, background setting, lighting and characters. \n here is the previous story pages for refrence {previous_story_pages}\n and here is the previous story pages images prompts for refrence: {cumulative_image_prompts}'
+                inputText += f'\n making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects]. The image should reflect a coherent world and preserve recurring elements seen in previous images. Focus on relevant features , e.g., expression, background setting, lighting and characters. \n here is the previous story pages for refrence {previous_story_pages}\n and here is the previous story pages images prompts for refrence: {cumulative_image_prompts} you must provide prompt any other respond will be not Accepted'
             
             print(inputText)
 
