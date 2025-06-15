@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from db import books_collection, users_collection 
 from bson import ObjectId
 import datetime
+from random import randint
 books = Blueprint("books", __name__)
 
 # 🔹 יצירת ספר חדש
@@ -29,6 +30,7 @@ def create_book():
         "user_id": user["_id"],
         "created_at": datetime.datetime.utcnow(),
         "num_pages": len(pages),
+        "rating": 0,
         "pages": pages
     }
 
@@ -90,4 +92,42 @@ def get_user_books():
             "pages": book.get("pages")
         })
 
+    return jsonify({"books": books_list}), 200
+
+
+@books.route("/get_top_pick", methods=["GET"])
+def get_top_pick():
+#בוחר 3 ספרים רנדומליים מהדאטה בייס 
+    books = books_collection.find()
+    lenght_collection = books_collection.count_documents({})
+    books_list = []
+    for i in range (3):
+        book  = books[randint(0,lenght_collection)]
+        books_list.append({
+            "id": str(book["_id"]),
+            "title": book.get("title"),
+            "author": book.get("author"),
+            "created_at": book.get("created_at").isoformat(),
+            "num_pages": book.get("num_pages"),
+            "pages": book.get("pages")
+        })
+    return jsonify({"books": books_list}), 200
+
+@books.route("/get_top_rated", methods=["GET"])
+def get_top_rated():
+    #בוחר 4 ספרים עם הדירוג הגבוה ביותר מהדאטה בייס 
+
+    books = books_collection.find().sort({"rating":-1 , "numPages":-1} )
+    books_list = []
+    lenght_collection = books_collection.count_documents({})
+    for i in range (4):
+        book  = books[randint(0,lenght_collection)]
+        books_list.append({
+            "id": str(book["_id"]),
+            "title": book.get("title"),
+            "author": book.get("author"),
+            "created_at": book.get("created_at").isoformat(),
+            "num_pages": book.get("num_pages"),
+            "pages": book.get("pages")
+        })
     return jsonify({"books": books_list}), 200
