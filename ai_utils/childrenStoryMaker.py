@@ -6,10 +6,19 @@ import re
 # הפונקציה מקבלת טקסט של סיפור ילדים ומפרידה אותו לעמודים
 # כל עמוד מתחיל במחרוזת "Page X: " כאשר X הוא מספר העמוד
 def storyTextSplit(text):
-    matches = re.split(r'Page \d+:\s', text)
+    # matches = re.split(r'Page \d+:\s', text)
+    matches = re.findall(r"\*\*Page \d+:\*\*.*?(?=(\*\*Page \d+:\*\*|$))", text, re.DOTALL)
     # Remove the first empty string if it exists, and strip whitespace
     arr = [page.strip() for page in matches if page.strip()]
+    # print(f"\n\n\n\n{arr}\n\n\n\n")
     print(arr)
+    if (len(arr)==0):
+        matches = re.split(r'(?=Page \d+:)', text)
+        arr = [page.strip() for page in matches if page.strip()]
+        print(arr)
+    if (len(arr)==0):
+        arr = re.split(r'(Page \d+:)', text)
+        print(arr)
     return arr
 # # מחלקת page מייצגת עמוד בסיפור ילדים
 # כוללת טקסט , קישור לתמונה וקובץ קול
@@ -90,7 +99,9 @@ class Story():
         if title!= '':
             self.title = title
         else:
-            self.title =t.makeTextAI(f"give me a title for children book with a description of {description} {extra_promt}")
+            # self.title =t.makeTextAI(f"give me a title for children book with a description of {description} {extra_promt}")
+            text_output =t.makeTextAI(f"give me a title for children book with a description of {description} {extra_promt} return just one title ,  Return the respond as follow: Title:the title of the story")
+            self.title  = text_output.split("Title:")[1].strip()
         #no rellevant: move from  stable diffusion to gemini
         #steps  =imageQuality[quality_images].value 
         #save value of the first image to base the rest of the images on that
@@ -125,7 +136,8 @@ class Story():
             #staticNumIdPic+=1
             voice_file_url = None
             if make_voice:
-                voice_file_url = newVoiceFile(pages_texts_list[i],f"{title}_page{i}_voice")
+                # voice_file_url = newVoiceFile(pages_texts_list[i],f"{title}_page{i}_voice")
+                voice_file_url = newVoiceFile(pages_texts_list[i],f"{self.title}_page{i}_voice")
             self.pages.append(page(pages_texts_list[i] , pathImage,voice_file_url)) 
 
         
@@ -154,8 +166,9 @@ class Story():
         if title!= '':
             self.title = title
         else:
-            self.title =t.makeTextAI(f"give me a title for children book with a description of {description} {extra_promt}")
-
+            # self.title =t.makeTextAI(f"give me a title for children book with a description of {description} {extra_promt}")
+            text_output =t.makeTextAI(f"give me a title for children book with a description of {description} {extra_promt} return just one title ,  Return the respond as follow: Title:the title of the story")
+            self.title  = text_output.split("Title:")[1].strip()
         story = t.makeTextAI(f'''
     You are currently a children's writer who is required to write a children's book about {subject}
     You are required to write {numPages} pages with each page no more than 150 words
@@ -182,7 +195,7 @@ class Story():
             if (i>0):
                 cumulative_image_prompts = ' '.join([prompt for prompt in images_prompts])
                 previous_story_pages = ' '.join([pages_text[j] for j in range(i)])
-                inputText += f'\n making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects]. The image should reflect a coherent world and preserve recurring elements seen in previous images. Focus on relevant features , e.g., expression, background setting, lighting and characters. \n here is the previous story pages for refrence {previous_story_pages}\n and here is the previous story pages images prompts for refrence: {cumulative_image_prompts}'
+                inputText += f'\n making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects]. The image should reflect a coherent world and preserve recurring elements seen in previous images. Focus on relevant features , e.g., expression, background setting, lighting and characters. \n here is the previous story pages for refrence {previous_story_pages}\n and here is the previous story pages images prompts for refrence: {cumulative_image_prompts} you must provide prompt any other respond will be not Accepted'
             
             print(inputText)
 
@@ -200,7 +213,8 @@ class Story():
             #staticNumIdPic+=1
             voice_file_url = None
             if make_voice:
-                voice_file_url = newVoiceFile(pages_text[i],f"{title}_page{i}_voice")
+                # voice_file_url = newVoiceFile(pages_text[i],f"{title}_page{i}_voice")
+                 voice_file_url = newVoiceFile(pages_text[i],f"{self.title}_page{i}_voice")
             self.pages.append(page(pages_text[i] , pathImage,voice_file_url)) 
 
         
@@ -314,7 +328,8 @@ class Continued_story(Story):
             #staticNumIdPic+=1
             voice_file_url = None
             if make_voice:
-                voice_file_url = newVoiceFile(pages_text[i],f"{title}_page{i}_voice")
+                # voice_file_url = newVoiceFile(pages_text[i],f"{title}_page{i}_voice")
+                voice_file_url = newVoiceFile(pages_text[i],f"{self.title}_page{i}_voice")
             self.pages.append(page(pages_text[i] , pathImage,voice_file_url)) 
 
 
