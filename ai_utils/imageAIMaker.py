@@ -43,46 +43,48 @@ from dotenv import load_dotenv
 
 #version 2 with google gemini
 
-def makeImageAI(prompt , resolution = ""):
-    load_dotenv(override= True)
+def makeImageAI(prompt, resolution=""):
+    load_dotenv(override=True)
     apiKey = getenv("API_KEY")
     client = genai.Client(api_key=apiKey)
 
+    # הוספת מידע לבקשת התמונה
+    prompt += f", 4K definition, resolution = {resolution}"
+    contents = prompt
 
-    #adding resulotion
-    prompt +=f",4K definition , resulotion  = {resolution}"
-    contents = (prompt)
-
-    picInclude = False
-    while ( picInclude == False):
-        response = client.models.generate_content(
-            model="gemini-2.0-flash-preview-image-generation",
-            contents=contents,
-            config=types.GenerateContentConfig(
-            response_modalities=['TEXT', 'IMAGE']
+    max_attempts = 5
+    attempts = 0
+    while attempts < max_attempts:
+        attempts += 1
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.0-flash-preview-image-generation",
+                contents=contents,
+                config=types.GenerateContentConfig(
+                    response_modalities=['TEXT', 'IMAGE']
+                )
             )
-        )
-        #make random image name
-        idPictuere = str(uuid.uuid4())[1:6]
-        fileName  = f'image {idPictuere}.png'
-        for part in response.candidates[0].content.parts:
-            if part.text is not None:
-                print(part.text)
-            elif part.inline_data is not None:
-                image = Image.open(BytesIO((part.inline_data.data)))
-                if resolution != "":    
-                    # Resize to 1024x570 pixels
-                    image= image.resize(turnStringintoResolution(resolution))
-                #image_bytes = base64.b64decode(part.inline_data.data)
-                #image = Image.open(BytesIO(image_bytes))
-                image.save(fileName)
-                print("image size \n\n\n")
-                print(image.size)
-                print("\n\n\n\n")
-                print(f"image saved as {fileName}")
-                picInclude =True
-        if picInclude :
-            return memoryManager.save_file(fileName ,fileType.png)
+
+            # יצירת שם אקראי לתמונה
+            idPicture = str(uuid.uuid4())[1:6]
+            fileName = f'image_{idPicture}.png'
+
+            for part in response.candidates[0].content.parts:
+                if part.inline_data is not None:
+                    image = Image.open(BytesIO(part.inline_data.data))
+                    if resolution != "":
+                        image = image.resize(turnStringintoResolution(resolution))
+                    image.save(fileName)
+                    print(f"✅ Image saved as {fileName} | size: {image.size}")
+                    return memoryManager.save_file(fileName ,fileType.png)
+
+                elif part.text is not None:
+                    print(f"[INFO] TEXT response: {part.text}")
+
+        except Exception as e:
+            print(f"⚠️ Error during image generation: {e}")
+
+    raise RuntimeError("❌ Failed to generate image after multiple attempts.")
 
 # # # #version 1 Stable Diffusion not Rellvant
 # def makeImageFromImage(prompt, steps, height, width, idPictuere , url_image_source):
@@ -112,63 +114,65 @@ def makeImageAI(prompt , resolution = ""):
 #     return memoryManager.save_file(fileName ,fileType.png)
 
 #version 2 google gemini
-
-def makeImageFromImage(prompt  ,url_image_source ,resolution = ""):
-    #apiKey
-
-    load_dotenv(override= True)
+def makeImageFromImage(prompt, url_image_source, resolution=""):
+    # Load API key
+    load_dotenv(override=True)
     apiKey = getenv("API_KEY")
     client = genai.Client(api_key=apiKey)
 
-    #adding resulotion and consistent
-    prompt +="making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects].,4K "
-    prompt +=f",4K definition , resulotion  = {resolution}"
+    # Enhance the prompt with consistency and resolution
+    prompt += ", making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects]"
+    prompt += f", 4K definition, resolution = {resolution}"
 
-    # Load image from URL
-    response = requests.get(url_image_source)
-    response.raise_for_status()  # Raise an error for bad responses
-    image = Image.open(BytesIO(response.content)).convert("RGB")
+    # Load the reference image from URL
+    try:
+        response = requests.get(url_image_source)
+        response.raise_for_status()
+        image = Image.open(BytesIO(response.content)).convert("RGB")
+    except Exception as e:
+        raise RuntimeError(f"❌ Failed to load image from URL: {e}")
 
-    client = genai.Client(api_key=apiKey)
+    text_input = prompt
 
-    text_input = (prompt)
+    # Generate a unique file name
+    idPicture = str(uuid.uuid4())[1:6]
+    fileName = f"image_{idPicture}.png"
+    max_attempts = 5
+    attempts = 0
 
-    #file name
-    idPictuere = str(uuid.uuid4())[1:6]
-    fileName  = f'image {idPictuere}.png'
-    picInclude = False
-
-    while (not picInclude):
-        response = client.models.generate_content(
-            model="gemini-2.0-flash-preview-image-generation",
-            contents=[text_input, image],
-            config=types.GenerateContentConfig(
-            response_modalities=['TEXT', 'IMAGE']
+    while attempts < max_attempts:
+        attempts += 1
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.0-flash-preview-image-generation",
+                contents=[text_input, image],
+                config=types.GenerateContentConfig(
+                    response_modalities=['TEXT', 'IMAGE']
+                )
             )
-        )
 
-        for part in response.candidates[0].content.parts:
-            if part.text is not None:
-                print(part.text)
-            elif part.inline_data is not None:
-                #image_bytes = base64.b64decode(part.inline_data.data)
-                #image = Image.open(BytesIO(image_bytes))
-                image = Image.open(BytesIO(part.inline_data.data))
-                image.save(fileName)
-                if resolution != "":    
-                    # Resize to pixels
-                    image= image.resize(turnStringintoResolution(resolution))
+            for part in response.candidates[0].content.parts:
+                if part.text:
+                    print(f"[INFO] Gemini responded:\n{part.text}\n")
 
-                print("image size \n\n\n")
+                elif part.inline_data:
+                    # Load image from the inline data
+                    image_result = Image.open(BytesIO(part.inline_data.data))
 
+                    # Resize if needed
+                    if resolution:
+                        image_result = image_result.resize(turnStringintoResolution(resolution))
 
-                print(image.size)
-                print("\n\n\n\n")
-                print(f"image saved as {fileName}")
-                picInclude = True
-        if picInclude :
-            return memoryManager.save_file(fileName ,fileType.png)
+                    image_result.save(fileName)
+                    print(f"✅ Image saved as {fileName} | size: {image_result.size}")
 
+                    # Return result from memoryManager
+                    return memoryManager.save_file(fileName, fileType.png)
+
+        except Exception as e:
+            print(f"⚠️ Attempt {attempts} failed: {e}")
+
+    raise RuntimeError("❌ Failed to generate image after multiple attempts.")
 
 
 def turnStringintoResolution(str_res : str):
