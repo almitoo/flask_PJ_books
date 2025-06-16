@@ -210,19 +210,5 @@ def update_profile_image():
     else:
         return jsonify({"status": "no change"}), 200
     
-@auth.route('/deleteUser',methods=['DELETE'] )
-def delete_user():   
-    data = request.json
-    email = data.get("email","")
-    
-    if not email:
-        return jsonify({"message": "All fields are required"}), 400
 
-    user = users_collection.find_one({"email": email})
-    if not user:
-        return jsonify({"message": "Invalid credentials"}), 401
-
-    users_collection.delete_one({'email':email})
-
-    return 200
 
