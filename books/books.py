@@ -4,6 +4,7 @@ from db import books_collection, users_collection
 from bson import ObjectId
 import datetime
 from random import randint
+from random import randint
 books = Blueprint("books", __name__)
 
 # 🔹 יצירת ספר חדש
@@ -50,6 +51,7 @@ def create_book_from_ai_utils(jsonBookData):
     title = jsonBookData.get("title")
     author = jsonBookData.get("author", user["full_name"])
     pages = jsonBookData.get("pages", {})
+    genre = jsonBookData.get("genre" ,"null")
     description = jsonBookData.get("description" , "")
 
     if not title or not pages:
@@ -62,6 +64,8 @@ def create_book_from_ai_utils(jsonBookData):
         "user_id": user["_id"],
         "created_at": datetime.datetime.utcnow(),
         "num_pages": len(pages),
+        "rating" : 0,
+        "genre" :genre,
         "pages": pages
     }
 
@@ -99,7 +103,7 @@ def get_user_books():
 def get_top_pick():
 #בוחר 3 ספרים רנדומליים מהדאטה בייס 
     books = books_collection.find()
-    lenght_collection = books_collection.count_documents({})
+    lenght_collection = books_collection.count_documents({})-1
     books_list = []
     for i in range (3):
         book  = books[randint(0,lenght_collection)]
@@ -112,14 +116,12 @@ def get_top_pick():
             "pages": book.get("pages")
         })
     return jsonify({"books": books_list}), 200
-
 @books.route("/get_top_rated", methods=["GET"])
 def get_top_rated():
     #בוחר 4 ספרים עם הדירוג הגבוה ביותר מהדאטה בייס 
-
     books = books_collection.find().sort({"rating":-1 , "numPages":-1} )
     books_list = []
-    lenght_collection = books_collection.count_documents({})
+    lenght_collection = books_collection.count_documents({})-1
     for i in range (4):
         book  = books[randint(0,lenght_collection)]
         books_list.append({
@@ -131,3 +133,18 @@ def get_top_rated():
             "pages": book.get("pages")
         })
     return jsonify({"books": books_list}), 200
+
+def change_genre_story(data , genre):
+    id = ObjectId(data['_id']['$oid'])
+    # חיפוש כל הספרים לפי user_id
+    bookObj = books_collection.find({"_id": id})
+
+    if not bookObj:
+        raise Exception(f"books is not found in mongo DB with id {id}")
+    newvalues = { "$set": { "genre": genre } }
+
+    books_collection.update_one({"_id":id},newvalues)
+    print(f"genere of book updated to {genre}")
+
+
+

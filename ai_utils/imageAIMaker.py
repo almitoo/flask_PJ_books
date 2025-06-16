@@ -43,7 +43,6 @@ from dotenv import load_dotenv
 
 #version 2 with google gemini
 
-
 def makeImageAI(prompt, resolution=""):
     load_dotenv(override=True)
     apiKey = getenv("API_KEY")
@@ -65,14 +64,14 @@ def makeImageAI(prompt, resolution=""):
                     response_modalities=['TEXT', 'IMAGE']
                 )
             )
+
             # יצירת שם אקראי לתמונה
             idPicture = str(uuid.uuid4())[1:6]
             fileName = f'image_{idPicture}.png'
+
             for part in response.candidates[0].content.parts:
                 if part.inline_data is not None:
-                    # image = Image.open(BytesIO(part.inline_data.data))
-                    image_bytes = base64.b64decode(part.inline_data.data)
-                    image = Image.open(BytesIO(image_bytes))                    
+                    image = Image.open(BytesIO(part.inline_data.data))
                     if resolution != "":
                         image = image.resize(turnStringintoResolution(resolution))
                     image.save(fileName)
@@ -86,6 +85,7 @@ def makeImageAI(prompt, resolution=""):
             print(f"⚠️ Error during image generation: {e}")
 
     raise RuntimeError("❌ Failed to generate image after multiple attempts.")
+
 # # # #version 1 Stable Diffusion not Rellvant
 # def makeImageFromImage(prompt, steps, height, width, idPictuere , url_image_source):
 #     pipeline = AutoPipelineForImage2Image.from_pretrained(
@@ -114,12 +114,12 @@ def makeImageAI(prompt, resolution=""):
 #     return memoryManager.save_file(fileName ,fileType.png)
 
 #version 2 google gemini
-
 def makeImageFromImage(prompt, url_image_source, resolution=""):
     # Load API key
     load_dotenv(override=True)
     apiKey = getenv("API_KEY")
     client = genai.Client(api_key=apiKey)
+
     # Enhance the prompt with consistency and resolution
     prompt += ", making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects]"
     prompt += f", 4K definition, resolution = {resolution}"
@@ -150,19 +150,22 @@ def makeImageFromImage(prompt, url_image_source, resolution=""):
                     response_modalities=['TEXT', 'IMAGE']
                 )
             )
+
             for part in response.candidates[0].content.parts:
                 if part.text:
                     print(f"[INFO] Gemini responded:\n{part.text}\n")
+
                 elif part.inline_data:
                     # Load image from the inline data
-                    # image_result = Image.open(BytesIO(part.inline_data.data))
-                    image_bytes = base64.b64decode(part.inline_data.data)
-                    image_result = Image.open(BytesIO(image_bytes))
+                    image_result = Image.open(BytesIO(part.inline_data.data))
+
                     # Resize if needed
                     if resolution:
                         image_result = image_result.resize(turnStringintoResolution(resolution))
+
                     image_result.save(fileName)
                     print(f"✅ Image saved as {fileName} | size: {image_result.size}")
+
                     # Return result from memoryManager
                     return memoryManager.save_file(fileName, fileType.png)
 
@@ -170,7 +173,8 @@ def makeImageFromImage(prompt, url_image_source, resolution=""):
             print(f"⚠️ Attempt {attempts} failed: {e}")
 
     raise RuntimeError("❌ Failed to generate image after multiple attempts.")
-                
+
+
 def turnStringintoResolution(str_res : str):
     str_res = str_res.lower()
     resolution = []

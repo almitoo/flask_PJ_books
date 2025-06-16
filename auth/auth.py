@@ -76,14 +76,7 @@ def signup():
         "bio": user["bio"],
         "location": user["location"],
         "image_base64": user["image_base64"]}), 201
-    return jsonify({
-        "message": "User registered successfully",
-        "token": token,
-        "userId": str(user["_id"]),
-        "full_name": str(user["full_name"]),
-        "bio": user["bio"],
-        "location": user["location"],
-        "image_base64": user["image_base64"]}), 201
+
 
 # 🔹 התחברות
 @auth.route("/login", methods=["POST"])
@@ -216,6 +209,6 @@ def update_profile_image():
         return jsonify({"status": "success"}), 200
     else:
         return jsonify({"status": "no change"}), 200
-
     
+
 
