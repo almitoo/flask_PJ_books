@@ -34,21 +34,32 @@ def locateGenreOfStory(pages_text):
     
 # הפונקציה מקבלת טקסט של סיפור ילדים ומפרידה אותו לעמודים
 # כל עמוד מתחיל במחרוזת "Page X: " כאשר X הוא מספר העמוד
+
 def storyTextSplit(text):
-    # matches = re.split(r'Page \d+:\s', text)
     matches = re.findall(r"\*\*Page \d+:\*\*.*?(?=(\*\*Page \d+:\*\*|$))", text, re.DOTALL)
-    # Remove the first empty string if it exists, and strip whitespace
     arr = [page.strip() for page in matches if page.strip()]
-    # print(f"\n\n\n\n{arr}\n\n\n\n")
-    print(arr)
-    if (len(arr)==0):
+    
+    if len(arr) == 0:
         matches = re.split(r'(?=Page \d+:)', text)
         arr = [page.strip() for page in matches if page.strip()]
-        print(arr)
-    if (len(arr)==0):
-        arr = re.split(r'(Page \d+:)', text)
-        print(arr)
-    return arr
+    
+    if len(arr) == 0:
+        matches = re.split(r'(Page \d+:)', text)
+        arr = [''.join(x) for x in zip(matches[1::2], matches[2::2])]
+        arr = [page.strip() for page in arr if page.strip()]
+
+    if not arr or 'Page 1' not in arr[0]:
+        return []
+
+    result = []
+    for i, page in enumerate(arr):
+        parts = page.split(f"Page {i+1}:")
+        if len(parts) > 1:
+            result.append(parts[1].strip())
+        else:
+            result.append(page.strip()) 
+
+    return result
 # # מחלקת page מייצגת עמוד בסיפור ילדים
 # כוללת טקסט , קישור לתמונה וקובץ קול
 # מחזירה את המידע כdict
@@ -59,16 +70,16 @@ class page():
         self.voice_file_url = voice_file_url
     
     def get_text_page(self):
-        return self._text_page
+        return self.text_page
 
     def set_text_page(self, text_page):
-        self._text_page = text_page
+        self.text_page = text_page
 
     def get_img_url(self):
-        return self._img_url
+        return self.img_url
 
     def set_img_url(self, img_url):
-        self._img_url = img_url
+        self.img_url = img_url
 
     def to_dict(self):
         return {
@@ -200,18 +211,25 @@ class Story():
             # self.title =t.makeTextAI(f"give me a title for children book with a description of {description} {extra_promt}")
             text_output =t.makeTextAI(f"give me a title for children book with a description of {description} {extra_promt} return just one title ,  Return the respond as follow: Title:the title of the story")
             self.title  = text_output.split("Title:")[1].strip()
-        story = t.makeTextAI(f'''
-    You are currently a children's writer who is required to write a children's book about {subject}
-    You are required to write {numPages} pages with each page no more than 150 words
-    Return the respond as follow:
-    Page 1: Text of page 1
-    Page 2: Text of page 2
-    And so on
-    ''')
-            
-        print (f"story  {story}")
-        pages_text = storyTextSplit(story) 
+       
+        pages_text =[]
+        tries = 0
+        while (len(pages_text)==0 or tries<4):
+            story = t.makeTextAI(f'''
+        You are currently a children's writer who is required to write a children's book about {subject}
+        You are required to write {numPages} pages with each page no more than 150 words
+        Return the respond as follow:
+        Page 1: Text of page 1
+        Page 2: Text of page 2
+        And so on
+        no intro some kind in the beginning , just the pages of the story in the format
+        ''')
+                
+            print (f"story  {story}")
+            pages_text = storyTextSplit(story) 
+            tries+=1
         
+
         #no rellevant: move from  stable diffusion to gemini
         #steps  =imageQuality[quality_images].value 
         
