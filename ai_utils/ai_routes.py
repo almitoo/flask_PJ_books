@@ -6,7 +6,7 @@ from ai_utils import imageAIMaker
 from ai_utils import voiceMaker
 from ai_utils import exceptionHandler as ex
 from google.api_core.exceptions import ResourceExhausted
-from books.books import create_book_from_ai_utils
+from books.books import create_book_from_ai_utils , change_genre_story
 ai_story = Blueprint("ai_story", __name__)
 
 # מקבלת טקסט שמתאר סצנה בסיפור ילדים שולחת את הטקסט  לפונקציית
@@ -88,7 +88,7 @@ def create_new_story():
         description = str(data["description"])
         title = str(data["title"])
         enable_voice = bool(data["text_to_voice"])
-        resolution = str(data["resolution"])
+        resolution = data.get("resolution" ,"")
 
 
         #optional value , don't raise exception
@@ -137,8 +137,8 @@ def create_new_story_sequel():
         return ex.exception_json_value(e)
     except ResourceExhausted as e:
         return ex.exception_ResourceExhausted(e)
-    # except Exception as e:
-    #     return ex.exception_internal_server_issue(e)
+    except Exception as e:
+        return ex.exception_internal_server_issue(e)
 
 @ai_story.route('/MagicOfStory/voice',methods=['POST'])
 def make_new_text_to_speach():
@@ -150,6 +150,25 @@ def make_new_text_to_speach():
         story = str(data["story_title"])
         url_file  = voiceMaker.newVoiceFile(text , f"{story}.mp3")
         return jsonify({"url": url_file})
+
+    except KeyError as e:
+        return ex.exception_json_value(e)
+    except ResourceExhausted as e:
+        return ex.exception_ResourceExhausted(e)
+    except Exception as e:
+        return ex.exception_internal_server_issue(e)
+    
+@ai_story.route('/MagicOfStory/ChooseGenreForStory',methods=['PUT'])
+def change_genre():
+    data = request.get_json()  # Get JSON data from the request body
+    if not data:
+        ex.exception_no_json()
+    try:
+        pages = data.get("pages")
+        pages_text = [page["text_page"] for page in pages]
+        genre = child.locateGenreOfStory(pages_text)
+        change_genre_story(data , genre)
+        return 'update made in book'
 
     except KeyError as e:
         return ex.exception_json_value(e)

@@ -3,23 +3,63 @@ from ai_utils.voiceMaker import newVoiceFile
 import ai_utils.imageAIMaker
 import re
 
+
+
+def locateGenreOfStory(pages_text):
+    generes = [
+        "Fantasy",
+        "Adventure",
+        "Fairy Tales",
+        "Mystery",
+        "Bedtime Stories",
+        "Science Fiction",
+        "Romance",
+        "Horror",
+        "Non-Fiction",
+        "Biography",
+        "History",
+        "Thriller",
+            ]
+
+    prompt = f'''
+        you need to choose a genere for the books : {pages_text}\n 
+        the options are: {generes}\n
+        return the answer in this form only:
+        answer: the choosen genere
+        '''
+    text_output = t.makeTextAI(prompt)
+    print(f"ai answer on genere : {text_output}")
+    return str(text_output.split("answer:")[1].strip())
+
+    
 # הפונקציה מקבלת טקסט של סיפור ילדים ומפרידה אותו לעמודים
 # כל עמוד מתחיל במחרוזת "Page X: " כאשר X הוא מספר העמוד
+
 def storyTextSplit(text):
-    # matches = re.split(r'Page \d+:\s', text)
     matches = re.findall(r"\*\*Page \d+:\*\*.*?(?=(\*\*Page \d+:\*\*|$))", text, re.DOTALL)
-    # Remove the first empty string if it exists, and strip whitespace
     arr = [page.strip() for page in matches if page.strip()]
-    # print(f"\n\n\n\n{arr}\n\n\n\n")
-    print(arr)
-    if (len(arr)==0):
+    
+    if len(arr) == 0:
         matches = re.split(r'(?=Page \d+:)', text)
         arr = [page.strip() for page in matches if page.strip()]
-        print(arr)
-    if (len(arr)==0):
-        arr = re.split(r'(Page \d+:)', text)
-        print(arr)
-    return arr
+    
+    if len(arr) == 0:
+        matches = re.split(r'(Page \d+:)', text)
+        arr = [''.join(x) for x in zip(matches[1::2], matches[2::2])]
+        arr = [page.strip() for page in arr if page.strip()]
+
+    if not arr or 'Page 1' not in arr[0]:
+        return []
+
+    result = []
+    for i, page in enumerate(arr):
+        parts = page.split(f"Page {i+1}:")
+        if len(parts) > 1:
+            result.append(parts[1].strip())
+        else:
+            result.append(page.strip()) 
+
+    return result
 # # מחלקת page מייצגת עמוד בסיפור ילדים
 # כוללת טקסט , קישור לתמונה וקובץ קול
 # מחזירה את המידע כdict
@@ -30,16 +70,16 @@ class page():
         self.voice_file_url = voice_file_url
     
     def get_text_page(self):
-        return self._text_page
+        return self.text_page
 
     def set_text_page(self, text_page):
-        self._text_page = text_page
+        self.text_page = text_page
 
     def get_img_url(self):
-        return self._img_url
+        return self.img_url
 
     def set_img_url(self, img_url):
-        self._img_url = img_url
+        self.img_url = img_url
 
     def to_dict(self):
         return {
@@ -75,6 +115,8 @@ class Story():
         else:
             print("making a new story , pages has been have by the user.")
             self.story_media_maker(subject,numPages,auther,description,title,make_voice,pages_texts_list,resolution)
+        pages_text = [page.get_text_page() for page in self.pages]
+        self.genre = locateGenreOfStory(pages_text)
         print("story has been complete \n\n")
 # נשתמש בה כאשר המשתמש שלח כבר טקסט של הסיפור
 # אם אין כותרת הAI ימציא כותרת
@@ -113,7 +155,7 @@ class Story():
             if (i>0):
                 cumulative_image_prompts = ' '.join([prompt for prompt in images_prompts])
                 previous_story_pages = ' '.join([pages_texts_list[j] for j in range(i)])
-                inputText += f'\n making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects]. The image should reflect a coherent world and preserve recurring elements seen in previous images. Focus on relevant features , e.g., expression, background setting, lighting and characters. \n here is the previous story pages for refrence {previous_story_pages}\n and here is the previous story pages images prompts for refrence: {cumulative_image_prompts}'
+                inputText += f'\n making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects]. The image should reflect a coherent world and preserve recurring elements seen in previous images. Focus on relevant features , e.g., expression, background setting, lighting and characters. \n here is the previous story pages for refrence {previous_story_pages}\n and here is the previous story pages images prompts for refrence: {cumulative_image_prompts} you must provide prompt any other respond will be not Accepted'
             
             print(inputText)
 
@@ -169,18 +211,25 @@ class Story():
             # self.title =t.makeTextAI(f"give me a title for children book with a description of {description} {extra_promt}")
             text_output =t.makeTextAI(f"give me a title for children book with a description of {description} {extra_promt} return just one title ,  Return the respond as follow: Title:the title of the story")
             self.title  = text_output.split("Title:")[1].strip()
-        story = t.makeTextAI(f'''
-    You are currently a children's writer who is required to write a children's book about {subject}
-    You are required to write {numPages} pages with each page no more than 150 words
-    Return the respond as follow:
-    Page 1: Text of page 1
-    Page 2: Text of page 2
-    And so on
-    ''')
-            
-        print (f"story  {story}")
-        pages_text = storyTextSplit(story) 
+       
+        pages_text =[]
+        tries = 0
+        while (len(pages_text)==0 or tries<4):
+            story = t.makeTextAI(f'''
+        You are currently a children's writer who is required to write a children's book about {subject}
+        You are required to write {numPages} pages with each page no more than 150 words
+        Return the respond as follow:
+        Page 1: Text of page 1
+        Page 2: Text of page 2
+        And so on
+        no intro some kind in the beginning , just the pages of the story in the format
+        ''')
+                
+            print (f"story  {story}")
+            pages_text = storyTextSplit(story) 
+            tries+=1
         
+
         #no rellevant: move from  stable diffusion to gemini
         #steps  =imageQuality[quality_images].value 
         
@@ -227,7 +276,8 @@ class Story():
             'numPages': self.numPages,
             'auther': self.auther,
             'description': self.description,
-            'title': self.title
+            'title': self.title,
+            'genre':self.genre
         }
         pages_dict = [page.to_dict() for page in self.pages]
         dict['pages'] = pages_dict
@@ -331,6 +381,7 @@ class Continued_story(Story):
                 # voice_file_url = newVoiceFile(pages_text[i],f"{title}_page{i}_voice")
                 voice_file_url = newVoiceFile(pages_text[i],f"{self.title}_page{i}_voice")
             self.pages.append(page(pages_text[i] , pathImage,voice_file_url)) 
+        self.genre = locateGenreOfStory(pages_text)
 
 
 
