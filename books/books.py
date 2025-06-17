@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from db import books_collection, users_collection 
 from bson import ObjectId
 import datetime
+from .utilities_books import checkBookInBookList 
 from random import randint
 from random import randint
 books = Blueprint("books", __name__)
@@ -41,37 +42,6 @@ def create_book():
         "message": "Book created successfully",
         "book_id": str(result.inserted_id)
     }), 201
-def create_book_from_ai_utils(jsonBookData):
-    email = get_jwt_identity()
-
-    user = users_collection.find_one({"email": email})
-    if not user:
-        return jsonify({"message": "User not found"}), 404
-
-    title = jsonBookData.get("title")
-    author = jsonBookData.get("author", user["full_name"])
-    pages = jsonBookData.get("pages", {})
-    genre = jsonBookData.get("genre" ,"null")
-    description = jsonBookData.get("description" , "")
-
-    if not title or not pages:
-        return jsonify({"message": "Missing title or pages"}), 400
-
-    book = {
-        "title": title,
-        "author": author,
-        "description" :description,
-        "user_id": user["_id"],
-        "created_at": datetime.datetime.utcnow(),
-        "num_pages": len(pages),
-        "rating" : 0,
-        "genre" :genre,
-        "pages": pages
-    }
-
-    result = books_collection.insert_one(book)
-    print(f"Book created successfully in the DB , {str(result.inserted_id)}")
-    
 
 @books.route("/get_user_books", methods=["GET"])
 @jwt_required()
@@ -101,50 +71,77 @@ def get_user_books():
 
 @books.route("/get_top_pick", methods=["GET"])
 def get_top_pick():
-#בוחר 3 ספרים רנדומליים מהדאטה בייס 
+#בוחר 4 ספרים רנדומליים מהדאטה בייס 
     books = books_collection.find()
     lenght_collection = books_collection.count_documents({})-1
     books_list = []
-    for i in range (3):
+    while(len(books_list)<4):
         book  = books[randint(0,lenght_collection)]
-        books_list.append({
-            "id": str(book["_id"]),
-            "title": book.get("title"),
-            "author": book.get("author"),
-            "created_at": book.get("created_at").isoformat(),
-            "num_pages": book.get("num_pages"),
-            "pages": book.get("pages")
-        })
+        if (not checkBookInBookList(books_list , book)):
+            books_list.append({
+                "id": str(book["_id"]),
+                "title": book.get("title"),
+                "author": book.get("author"),
+                "created_at": book.get("created_at").isoformat(),
+                "num_pages": book.get("num_pages"),
+                "pages": book.get("pages")
+            })
+
     return jsonify({"books": books_list}), 200
 @books.route("/get_top_rated", methods=["GET"])
 def get_top_rated():
     #בוחר 4 ספרים עם הדירוג הגבוה ביותר מהדאטה בייס 
     books = books_collection.find().sort({"rating":-1 , "numPages":-1} )
     books_list = []
-    lenght_collection = books_collection.count_documents({})-1
-    for i in range (4):
-        book  = books[randint(0,lenght_collection)]
-        books_list.append({
-            "id": str(book["_id"]),
-            "title": book.get("title"),
-            "author": book.get("author"),
-            "created_at": book.get("created_at").isoformat(),
-            "num_pages": book.get("num_pages"),
-            "pages": book.get("pages")
-        })
+    for book in books:
+        if (len(books_list)==4):
+            break
+
+        if (not checkBookInBookList(books_list , book)):
+            books_list.append({
+                "id": str(book["_id"]),
+                "title": book.get("title"),
+                "author": book.get("author"),
+                "created_at": book.get("created_at").isoformat(),
+                "num_pages": book.get("num_pages"),
+                "pages": book.get("pages")
+            })
+
     return jsonify({"books": books_list}), 200
 
-def change_genre_story(data , genre):
-    id = ObjectId(data['_id']['$oid'])
-    # חיפוש כל הספרים לפי user_id
-    bookObj = books_collection.find({"_id": id})
-
-    if not bookObj:
-        raise Exception(f"books is not found in mongo DB with id {id}")
-    newvalues = { "$set": { "genre": genre } }
-
-    books_collection.update_one({"_id":id},newvalues)
-    print(f"genere of book updated to {genre}")
 
 
+@books.route("/genre/<string:genre>" , methods=["GET"])
+def get_books_genre(genre):
+    books = books_collection.find({"genre": genre})
+    books_list = []
+    for book in books:
+        if (not checkBookInBookList(books_list , book)):
+            books_list.append({
+                "id": str(book["_id"]),
+                "title": book.get("title"),
+                "author": book.get("author"),
+                "created_at": book.get("created_at").isoformat(),
+                "num_pages": book.get("num_pages"),
+                "pages": book.get("pages")
+            })
+    return jsonify({"books": books_list}), 200
+
+
+@books.route("/recent_added" , methods=["GET"])
+def get_recent_added():
+    books = books_collection.find({}).sort({"created_at":-1})
+    books_list = []
+    for i in range(5):
+        book = books[i]
+        if (not checkBookInBookList(books_list , book)):
+            books_list.append({
+                "id": str(book["_id"]),
+                "title": book.get("title"),
+                "author": book.get("author"),
+                "created_at": book.get("created_at").isoformat(),
+                "num_pages": book.get("num_pages"),
+                "pages": book.get("pages")
+            })
+    return jsonify({"books": books_list}), 200
 
