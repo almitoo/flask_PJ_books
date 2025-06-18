@@ -46,27 +46,34 @@ def create_book():
 @books.route("/get_user_books", methods=["GET"])
 @jwt_required()
 def get_user_books():
-    email = get_jwt_identity()
+    try:
+        email = get_jwt_identity()
 
-    user = users_collection.find_one({"email": email})
-    if not user:
-        return jsonify({"message": "User not found"}), 404
+        user = users_collection.find_one({"email": email})
+        if not user:
+            return jsonify({"message": "User not found"}), 404
 
-    # חיפוש כל הספרים לפי user_id
-    user_books = books_collection.find({"user_id": user["_id"]})
+        user_books = books_collection.find({"user_id": user["_id"]})
 
-    books_list = []
-    for book in user_books:
-        books_list.append({
-            "id": str(book["_id"]),
-            "title": book.get("title"),
-            "author": book.get("author"),
-            "created_at": book.get("created_at").isoformat(),
-            "num_pages": book.get("num_pages"),
-            "pages": book.get("pages")
-        })
+        books_list = []
+        for book in user_books:
+            books_list.append({
+                "id": str(book["_id"]),
+                "title": book.get("title"),
+                "author": book.get("author"),
+                "created_at": book.get("created_at").isoformat() if book.get("created_at") else None,
+                "num_pages": book.get("num_pages"),
+                "rating": book.get("rating"),
+                "genre": book.get("genre"),
+                "pages": book.get("pages")
+            })
 
-    return jsonify({"books": books_list}), 200
+        return jsonify({"books": books_list}), 200
+
+    except Exception as e:
+        print(f"Error in get_user_books: {e}")
+        return jsonify({"message": "Internal server error"}), 500
+
 
 
 @books.route("/get_top_pick", methods=["GET"])
@@ -88,6 +95,8 @@ def get_top_pick():
             })
 
     return jsonify({"books": books_list}), 200
+
+
 @books.route("/get_top_rated", methods=["GET"])
 def get_top_rated():
     #בוחר 4 ספרים עם הדירוג הגבוה ביותר מהדאטה בייס 
