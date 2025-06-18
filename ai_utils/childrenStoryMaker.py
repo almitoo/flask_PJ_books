@@ -8,7 +8,7 @@ import re
 def locateGenreOfStory(pages_text):
     generes = [
         "Fantasy",
-        "Adventure",
+       "Adventure",
         "Fairy Tales",
         "Mystery",
         "Bedtime Stories",
@@ -26,10 +26,13 @@ def locateGenreOfStory(pages_text):
         the options are: {generes}\n
         return the answer in this form only:
         answer: the choosen genere
+        
         '''
     text_output = t.makeTextAI(prompt)
     print(f"ai answer on genere : {text_output}")
-    return str(text_output.split("answer:")[1].strip())
+    answer  = str(text_output.split("answer:")[1].strip())
+    print(f"answer after the split {answer}")
+    return answer
 
     
 # הפונקציה מקבלת טקסט של סיפור ילדים ומפרידה אותו לעמודים
@@ -296,6 +299,7 @@ class Story():
             "num_pages": self.numPages,
             # cover_image = התמונה של העמוד הראשון (נוח ל-Flutter)
             "cover_image": self.pages[0].img_url if self.pages else "",
+            'genre':self.genre,
             "pages": [
                 {
                     "text_page": p.text_page,
