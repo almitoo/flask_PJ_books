@@ -63,6 +63,8 @@ def get_user_books():
                 "author": book.get("author"),
                 "created_at": book.get("created_at").isoformat() if book.get("created_at") else None,
                 "num_pages": book.get("num_pages"),
+                "rating": book.get("rating"),
+                "genre": book.get("genre"),
                 "pages": book.get("pages")
             })
 
