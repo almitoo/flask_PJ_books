@@ -6,7 +6,7 @@ from ai_utils import imageAIMaker
 from ai_utils import voiceMaker
 from ai_utils import exceptionHandler as ex
 from google.api_core.exceptions import ResourceExhausted
-from books.books import create_book_from_ai_utils , change_genre_story
+from books.utilities_books import create_book_from_ai_utils , change_genre_story
 ai_story = Blueprint("ai_story", __name__)
 
 # מקבלת טקסט שמתאר סצנה בסיפור ילדים שולחת את הטקסט  לפונקציית

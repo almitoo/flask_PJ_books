@@ -75,7 +75,8 @@ def signup():
         "full_name": str(user["full_name"]),
         "bio": user["bio"],
         "location": user["location"],
-        "image_base64": user["image_base64"]}), 201
+        "image_base64": user["image_base64"],
+        "genres": user["genres"]}), 201
 
 
 # 🔹 התחברות
@@ -101,12 +102,12 @@ def login():
         "full_name": str(user["full_name"]),
         "bio": str(user["bio"]),
         "location": str(user["location"]),
-        "image_base64": str(user["image_base64"]),
         "full_name": str(user["full_name"]),
         "bio": str(user["bio"]),
         "location": str(user["location"]),
-        "image_base64": str(user["image_base64"])
-    })
+        "image_base64": str(user["image_base64"]),
+        "genres" : list(user["genres"])
+    }) , 200
     
 @auth.route('/deleteUser',methods=['DELETE'] )
 def delete_user():   
