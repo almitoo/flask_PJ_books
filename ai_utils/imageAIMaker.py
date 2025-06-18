@@ -71,7 +71,9 @@ def makeImageAI(prompt, resolution=""):
 
             for part in response.candidates[0].content.parts:
                 if part.inline_data is not None:
-                    image = Image.open(BytesIO(part.inline_data.data))
+                    # image = Image.open(BytesIO(part.inline_data.data))
+                    image_bytes = base64.b64decode(part.inline_data.data)
+                    image = Image.open(BytesIO(image_bytes))
                     if resolution != "":
                         image = image.resize(turnStringintoResolution(resolution))
                     image.save(fileName)
@@ -157,8 +159,9 @@ def makeImageFromImage(prompt, url_image_source, resolution=""):
 
                 elif part.inline_data:
                     # Load image from the inline data
-                    image_result = Image.open(BytesIO(part.inline_data.data))
-
+                    # image_result = Image.open(BytesIO(part.inline_data.data))
+                    image_bytes = base64.b64decode(part.inline_data.data)
+                    image_result = Image.open(BytesIO(image_bytes))
                     # Resize if needed
                     if resolution:
                         image_result = image_result.resize(turnStringintoResolution(resolution))
