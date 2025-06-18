@@ -316,6 +316,82 @@ class Story():
 class Continued_story(Story):
     def __init__(self,numPages, auther, description, title
                  ,previous_book_pages  ,previous_book_title
+                , make_voice,resolution , pages_texts_list):
+        # no text inclued = complete AI story
+        if len(pages_texts_list)==0:
+           self.continuedStoryMakeWithAI(numPages, auther, description, title
+                 ,previous_book_pages  ,previous_book_title
+                , make_voice,resolution)
+        #pages= story from the user 
+        else:
+            print("making a new story , pages has been have by the user.")
+            self.storyContinuedMakerWithText(numPages, auther, description, title
+                 ,previous_book_pages  ,previous_book_title
+                , make_voice,resolution , pages_texts_list)
+        pages_text = [page.get_text_page() for page in self.pages]
+        self.genre = locateGenreOfStory(pages_text)
+        print("story has been complete \n\n")
+    def storyContinuedMakerWithText(self,numPages, auther, description, title
+                 ,previous_book_pages  ,previous_book_title
+                , make_voice,resolution , pages_texts_list):
+        self.numPages = numPages
+        self.description = description
+        self.auther =auther
+        self.pages = []
+        if title!= '':
+            self.title = title
+        else:
+            # self.title =t.makeTextAI(f"give me a title for children book with a description of {description} {extra_promt}")
+            text_output =t.makeTextAI(f'''give me a title for children book with a description of {description} 
+                                        base your answer on the title of the previous story {previous_book_title}
+                                         return just one title , 
+                                       Return the respond as follow: Title:the title of the story
+                                      ''')
+            self.title  = text_output.split("Title:")[1].strip()
+        #no rellevant: move from  stable diffusion to gemini
+        #steps  =imageQuality[quality_images].value 
+        #save value of the first image to base the rest of the images on that
+        previous_book_story = previous_book_title +"\n"
+        for page_bool_previous in previous_book_pages:
+            previous_book_story += page_bool_previous.get('text_page')
+            previous_book_story +='\n'
+        
+        url_first_image =''
+        images_prompts =[]
+        for i in range(numPages):
+
+            inputText = f'''make an image prompt for children story according to this text {pages_texts_list[i]} ''' 
+            if (i>0):
+                cumulative_image_prompts = ' '.join([prompt for prompt in images_prompts])
+                previous_story_pages = ' '.join([pages_texts_list[j] for j in range(i)])
+                inputText+=f'''base your answer on the previous story text {previous_book_story}'''
+                inputText += f'\n making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects]. The image should reflect a coherent world and preserve recurring elements seen in previous images. Focus on relevant features , e.g., expression, background setting, lighting and characters. \n here is the previous story pages for refrence {previous_story_pages}\n and here is the previous story pages images prompts for refrence: {cumulative_image_prompts} you must provide prompt any other respond will be not Accepted'
+            print(inputText)
+
+            inputText = t.makeTextAI(inputText)
+            print(f"\n\n input prompt for image {i} in the story : {inputText}\n\n")
+            pathImage = None
+            if i==0:
+                #pathImage = f"{title}_page{i}_pic"
+                pathImage = ai_utils.imageAIMaker.makeImageAI(inputText,resolution=resolution)
+                url_first_image = str(pathImage)
+            else:
+                
+                #pathImage = f"{title}_page{i}_pic"
+                pathImage = ai_utils.imageAIMaker.makeImageFromImage(inputText ,url_first_image,resolution=resolution)
+            
+            images_prompts.append(inputText)
+
+            #no rellevant: move from  stable diffusion to gemini
+            #pathImage = imageAIMaker.makeImageAI(inputText , steps , height_images  , width_images , staticNumIdPic)
+            #staticNumIdPic+=1
+            voice_file_url = None
+            if make_voice:
+                voice_file_url = newVoiceFile(pages_texts_list[i],f"{self.title}_page{i}_voice")
+            self.pages.append(page(pages_texts_list[i] , pathImage,voice_file_url)) 
+
+    def continuedStoryMakeWithAI(self,numPages, auther, description, title
+                 ,previous_book_pages  ,previous_book_title
                 , make_voice,resolution):
         #part 1 finds out what the previous story was
         previous_book_story = previous_book_title +"\n"
