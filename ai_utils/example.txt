@@ -76,17 +76,17 @@ json sequel story (function3):
 "text_to_voice":true,
 "pages_previous": [
         {
-            "img_url": "image 0.png",
+            "img_url": "https://firebasestorage.googleapis.com/v0/b/pawcuts-60a6c.appspot.com/o/Images%2Fimage%20c0511.png?alt=media&token=338c3764-2c76-4437-91f6-4ed518ba01c7",
             "text_page": "Whiskers twitched!  A fluffy cat, Mittens, saw a bouncy dog, Buster.  They stared.  Would they play?",
             "voice_file_url": null
         },
         {
-            "img_url": "image 1.png",
+            "img_url": "https://firebasestorage.googleapis.com/v0/b/pawcuts-60a6c.appspot.com/o/Images%2Fimage%207fbdd.png?alt=media&token=98292fff-5902-422e-ac80-cdb25f646d05 ",
             "text_page": "Buster wagged his tail, a happy thump! Mittens slowly blinked.  A tiny meow escaped.  Friends?",
             "voice_file_url": null
         },
         {
-            "img_url": "image 2.png",
+            "img_url": "https://firebasestorage.googleapis.com/v0/b/pawcuts-60a6c.appspot.com/o/Images%2Fimage%207eac7.png?alt=media&token=7f3d3157-19c5-4f6d-914e-b91882d7d354",
             "text_page": "They chased a bright red ball,  laughing and barking and purring.  A new friendship bloomed!",
             "voice_file_url": null
         }
@@ -94,6 +94,47 @@ json sequel story (function3):
 "title_previous":"cats and dogs"
 
 }
+other json for function3
+
+
+
+{
+
+"subject":"cats and dogs2",
+"numPages":"4",
+"auther":"Yam Horin",
+"description":"a cute story about how dogs and cats can become friends",
+"title":"",
+"text_to_voice":true,
+"pages_previous": [
+        {
+            "img_url": "https://firebasestorage.googleapis.com/v0/b/pawcuts-60a6c.appspot.com/o/Images%2Fimage%20c0511.png?alt=media&token=338c3764-2c76-4437-91f6-4ed518ba01c7",
+            "text_page": "Whiskers twitched!  A fluffy cat, Mittens, saw a bouncy dog, Buster.  They stared.  Would they play?",
+            "voice_file_url": null
+        },
+        {
+            "img_url": "https://firebasestorage.googleapis.com/v0/b/pawcuts-60a6c.appspot.com/o/Images%2Fimage%207fbdd.png?alt=media&token=98292fff-5902-422e-ac80-cdb25f646d05 ",
+            "text_page": "Buster wagged his tail, a happy thump! Mittens slowly blinked.  A tiny meow escaped.  Friends?",
+            "voice_file_url": null
+        },
+        {
+            "img_url": "https://firebasestorage.googleapis.com/v0/b/pawcuts-60a6c.appspot.com/o/Images%2Fimage%207eac7.png?alt=media&token=7f3d3157-19c5-4f6d-914e-b91882d7d354",
+            "text_page": "They chased a bright red ball,  laughing and barking and purring.  A new friendship bloomed!",
+            "voice_file_url": null
+        }
+    ],
+"title_previous":"cats and dogs",
+
+"story_pages" : [
+  "In a quiet town, cats and dogs lived on opposite sides of the park. They rarely spoke, but they watched each other with curiosity.One day, a mischievous puppy named Max saw a cat named Luna chasing butterflies. He barked playfully and joined in, startling her!",
+  "Instead of getting angry, Luna laughed. 'You're fast for a dog,' she said. Max wagged his tail. From that day, they met every morning.",
+  "When rain kept them inside, Luna came up with an idea. 'Let’s build a shelter for all animals!' Max barked in agreement.",
+  "Cats and dogs worked together, bringing sticks, blankets, and treats. Soon, they had a cozy spot where everyone played, no matter the weather.From then on, the park was full of wagging tails and happy purrs. Max and Luna showed everyone that even the oldest rivalries can become the best friendships."
+]
+
+}
+
+
 
 json 10 pages 
 
@@ -120,3 +161,5 @@ json 10 pages
 
 
 }
+
+
