@@ -113,21 +113,21 @@ def create_new_story():
 @ai_story.route('/MagicOfStory/Story/Sequel',methods=['POST'])
 @jwt_required()
 def create_new_story_sequel():
-    global staticNumIdPic
     data = request.get_json()  # Get JSON data from the request body
     if not data:
         return ex.exception_no_json()
     try:
         numPages = int(data["numPages"])
         auther = str(data["auther"])
-        description = str(data["description"])
+        description = str(data.get("description" ,""))
         title = str(data["title"])
         enable_voice = bool(data["text_to_voice"])
+        print(enable_voice)
         pages_previous = list(data["pages_previous"])
         title_previous = str(data["title_previous"])
-        resolution = str(data["resolution"])
-        story_obj = child.Continued_story(numPages,auther,description,title ,pages_previous,title_previous ,enable_voice,resolution)
-        staticNumIdPic+=numPages
+        resolution =   str( data.get("resolution" ,""))
+        pages_texts_list = list(data.get("story_pages",[]))
+        story_obj = child.Continued_story(numPages,auther,description,title ,pages_previous,title_previous ,enable_voice,resolution , pages_texts_list)
         jsonBook = story_obj.to_dict()
         create_book_from_ai_utils(jsonBook)
         return jsonify(jsonBook)
