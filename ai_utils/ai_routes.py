@@ -117,9 +117,10 @@ def create_new_story_sequel():
     if not data:
         return ex.exception_no_json()
     try:
+        subject = str(data["subject"])
         numPages = int(data["numPages"])
         auther = str(data["auther"])
-        description = str(data.get("description" ,""))
+        description = str(data["description"])
         title = str(data["title"])
         enable_voice = bool(data["text_to_voice"])
         print(enable_voice)
