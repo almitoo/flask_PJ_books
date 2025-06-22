@@ -33,6 +33,7 @@ def create_book():
         "created_at": datetime.datetime.utcnow(),
         "num_pages": len(pages),
         "rating": 0,
+        "commnets":[],
         "pages": pages
     }
 
@@ -63,7 +64,8 @@ def get_user_books():
                 "author": book.get("author"),
                 "created_at": book.get("created_at").isoformat() if book.get("created_at") else None,
                 "num_pages": book.get("num_pages"),
-                "rating": book.get("rating"),
+                "rating": book.get("rating")if book.get("rating") else 2.5, #defult rating to show something 
+                "commnets":book.get("commnets")if book.get("commnets") else [],
                 "genre": book.get("genre"),
                 "pages": book.get("pages")
             })
@@ -154,3 +156,155 @@ def get_recent_added():
             })
     return jsonify({"books": books_list}), 200
 
+@books.route("/new_rating_for_book/id=<string:id_book>" ,methods=["PUT"])
+def updateRatingOfBook(id_book):
+    id = ObjectId(id_book)
+    # חיפוש כל הספרים לפי user_id
+    bookObj = books_collection.find_one({"_id": id})
+
+    if not bookObj:
+        return jsonify({"message": "Book not found"}), 404
+    
+    data = request.json
+    rating = data.get("rating")
+    sum_rating = bookObj.get("sum_rating") if bookObj.get("sum_rating") else 0
+    counter_rating = bookObj.get("counter_rating") if bookObj.get("counter_rating") else 0
+
+    sum_rating+= rating
+    counter_rating+=1
+    rating  = sum_rating//counter_rating
+
+    #upadte in the DB
+    newvalues = { "$set": { 
+                    "sum_rating" :sum_rating,
+                    "counter_rating" :counter_rating,
+                    "rating" :rating
+     } }
+    
+    books_collection.update_one({"_id":id},newvalues)
+    
+    dic_print = { 
+                    "sum_rating" :sum_rating,
+                    "counter_rating" :counter_rating,
+                    "rating" :rating
+     } 
+
+    print(f"values update in the DB for book {id} {dic_print}")
+
+    return f"values update in the DB for book {id} {dic_print}", 200
+
+@books.route("/new_comment_for_book/id=<string:id_book>" ,methods=["PUT"])
+@jwt_required()
+def addNewCommentInBook(id_book):
+    id = ObjectId(id_book)
+    # חיפוש כל הספרים לפי user_id
+    bookObj = books_collection.find_one({"_id": id})
+
+    if not bookObj:
+        return jsonify({"message": "Book not found"}), 404
+
+    email = get_jwt_identity()
+
+    user = users_collection.find_one({"email": email})
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+    
+    data = request.json
+
+    user_name = user.get("full_name","null")
+    text_comment = data.get("comment","")
+
+    commnets = list(bookObj.get("commnets",[]))
+
+    commnets.append({"user":user_name , "comment":text_comment})
+    #upadte in the DB
+    newvalues = { "$set": { 
+                    "commnets" :commnets,
+     } }
+    
+    books_collection.update_one({"_id":id},newvalues)
+    
+    dic_print = { 
+                    "commnets" :commnets
+     } 
+
+    print(f"values update in the DB for book {id} {dic_print}")
+
+    return f"values update in the DB for book {id} {dic_print}", 200
+
+@books.route("/newCommentAndRanking/id=<string:id_book>" ,methods=["PUT"])
+@jwt_required()
+def addRankingAndComment(id_book):
+    id = ObjectId(id_book)
+    # חיפוש כל הספרים לפי user_id
+    bookObj = books_collection.find_one({"_id": id})
+
+    if not bookObj:
+        return jsonify({"message": "Book not found"}), 404
+
+    email = get_jwt_identity()
+
+    user = users_collection.find_one({"email": email})
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+    
+    data = request.json
+
+    user_name = user.get("full_name","null")
+    text_comment = data.get("comment","")
+    rating = data.get("rating")
+    sum_rating = bookObj.get("sum_rating") if bookObj.get("sum_rating") else 0
+    counter_rating = bookObj.get("counter_rating") if bookObj.get("counter_rating") else 0
+    commnets = list(bookObj.get("commnets",[]))
+
+
+    commnets.append({"user":user_name , "comment":text_comment})
+    sum_rating+= rating
+    counter_rating+=1
+    rating  = sum_rating//counter_rating
+
+    #upadte in the DB
+    newvalues = { "$set": { 
+                    "commnets" :commnets,
+                    "sum_rating" :sum_rating,
+                    "counter_rating" :counter_rating,
+                    "rating" :rating
+                    
+     } }
+    
+    books_collection.update_one({"_id":id},newvalues)
+    
+    dic_print = { 
+                    "commnets" :len(commnets),
+                    "sum_rating" :sum_rating,
+                    "counter_rating" :counter_rating,
+                    "rating" :rating
+     } 
+
+    print(f"values update in the DB for book {id} {dic_print}")
+
+    return f"values update in the DB for book {id} {dic_print}", 200
+
+@books.route("/delete/id=<string:id_book>" ,methods=["DELETE"])
+@jwt_required()
+def deleteBook(id_book):
+    id = ObjectId(id_book)
+    # חיפוש כל הספרים לפי user_id
+    bookObj = books_collection.find_one({"_id": id})
+
+    if not bookObj:
+        return jsonify({"message": "Book not found"}), 404
+
+    email = get_jwt_identity()
+
+    user = users_collection.find_one({"email": email})
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+    
+    if bookObj["user_id"] == id :
+        books_collection.delete_one({"_id": id})
+        print(f"book has deleted from DB: id ={id}")
+        return f"book has been deleted ",200
+    else:
+        print("ERROR could not delete because the book was not made by the user ")
+        return  jsonify({"message": "ERROR could not delete because the book was not made by the user "}), 400
