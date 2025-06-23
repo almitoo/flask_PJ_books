@@ -5,7 +5,6 @@ from bson import ObjectId
 import datetime
 from .utilities_books import checkBookInBookList 
 from random import randint
-from random import randint
 books = Blueprint("books", __name__)
 
 # 🔹 יצירת ספר חדש
@@ -33,7 +32,7 @@ def create_book():
         "created_at": datetime.datetime.utcnow(),
         "num_pages": len(pages),
         "rating": 0,
-        "commnets":[],
+        "comments":[],
         "pages": pages
     }
 
@@ -65,7 +64,7 @@ def get_user_books():
                 "created_at": book.get("created_at").isoformat() if book.get("created_at") else None,
                 "num_pages": book.get("num_pages"),
                 "rating": book.get("rating")if book.get("rating") else 2.5, #defult rating to show something 
-                "commnets":book.get("commnets")if book.get("commnets") else [],
+                "comments":book.get("comments"),
                 "genre": book.get("genre"),
                 "pages": book.get("pages")
             })
@@ -214,18 +213,18 @@ def addNewCommentInBook(id_book):
     user_name = user.get("full_name","null")
     text_comment = data.get("comment","")
 
-    commnets = list(bookObj.get("commnets",[]))
+    comments = list(bookObj.get("comments",[]))
 
-    commnets.append({"user":user_name , "comment":text_comment})
+    comments.append({"user":user_name , "comment":text_comment})
     #upadte in the DB
     newvalues = { "$set": { 
-                    "commnets" :commnets,
+                    "comments" :comments,
      } }
     
     books_collection.update_one({"_id":id},newvalues)
     
     dic_print = { 
-                    "commnets" :commnets
+                    "comments" :comments
      } 
 
     print(f"values update in the DB for book {id} {dic_print}")
@@ -255,17 +254,17 @@ def addRankingAndComment(id_book):
     rating = data.get("rating")
     sum_rating = bookObj.get("sum_rating") if bookObj.get("sum_rating") else 0
     counter_rating = bookObj.get("counter_rating") if bookObj.get("counter_rating") else 0
-    commnets = list(bookObj.get("commnets",[]))
+    comments = list(bookObj.get("comments",[]))
 
 
-    commnets.append({"user":user_name , "comment":text_comment})
+    comments.append({"user":user_name , "comment":text_comment})
     sum_rating+= rating
     counter_rating+=1
     rating  = sum_rating//counter_rating
 
     #upadte in the DB
     newvalues = { "$set": { 
-                    "commnets" :commnets,
+                    "comments" :comments,
                     "sum_rating" :sum_rating,
                     "counter_rating" :counter_rating,
                     "rating" :rating
@@ -275,7 +274,7 @@ def addRankingAndComment(id_book):
     books_collection.update_one({"_id":id},newvalues)
     
     dic_print = { 
-                    "commnets" :len(commnets),
+                    "comments" :len(comments),
                     "sum_rating" :sum_rating,
                     "counter_rating" :counter_rating,
                     "rating" :rating
@@ -301,10 +300,32 @@ def deleteBook(id_book):
     if not user:
         return jsonify({"message": "User not found"}), 404
     
-    if bookObj["user_id"] == id :
-        books_collection.delete_one({"_id": id})
-        print(f"book has deleted from DB: id ={id}")
-        return f"book has been deleted ",200
+    books_collection.delete_one({"_id": id})
+    print(f"book has deleted from DB: id ={id}")
+    return f"book has been deleted ",200
+
+
+
+@books.route("/checkDeleteOption/id=<string:id_book>" ,methods=["GET"])
+@jwt_required()
+def checkDeleteBook(id_book):
+    id = ObjectId(id_book)
+    # חיפוש כל הספרים לפי user_id
+    bookObj = books_collection.find_one({"_id": id})
+
+    if not bookObj:
+        return jsonify({"message": "Book not found"}), 404
+
+    email = get_jwt_identity()
+
+    user = users_collection.find_one({"email": email})
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+    
+    userIdInBookObj = ObjectId(bookObj["user_id"])
+    print(f"{userIdInBookObj} == {user["_id"]}")
+    if  userIdInBookObj == user["_id"] :
+        return jsonify({"message": "Book can be deleted"}), 200
     else:
-        print("ERROR could not delete because the book was not made by the user ")
         return  jsonify({"message": "ERROR could not delete because the book was not made by the user "}), 400
+
