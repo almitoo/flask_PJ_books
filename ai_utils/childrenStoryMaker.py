@@ -371,16 +371,14 @@ class Continued_story(Story):
             inputText = t.makeTextAI(inputText)
             print(f"\n\n input prompt for image {i} in the story : {inputText}\n\n")
             pathImage = None
-            if i==0:
-                #pathImage = f"{title}_page{i}_pic"
-                url_image_previous_book = previous_book_pages[0]["img_url"]
-                pathImage = ai_utils.imageAIMaker.makeImageFromImage(inputText,url_image_previous_book,resolution=resolution)
-                url_first_image = str(pathImage)
-            else:
-                
-                #pathImage = f"{title}_page{i}_pic"
-                pathImage = ai_utils.imageAIMaker.makeImageFromImage(inputText ,url_first_image,resolution=resolution)
             
+                #pathImage = f"{title}_page{i}_pic"
+            if (i<len(previous_book_pages)):
+                url_image_previous_book = previous_book_pages[i]["img_url"]
+            else:
+                url_image_previous_book = previous_book_pages[0]["img_url"]
+            pathImage = ai_utils.imageAIMaker.makeImageFromImage(inputText,url_image_previous_book,resolution=resolution)
+       
             images_prompts.append(inputText)
 
             #no rellevant: move from  stable diffusion to gemini
