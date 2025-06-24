@@ -63,9 +63,11 @@ def get_user_books():
                 "author": book.get("author"),
                 "created_at": book.get("created_at").isoformat() if book.get("created_at") else None,
                 "num_pages": book.get("num_pages"),
-                "rating": book.get("rating")if book.get("rating") else 2.5, #defult rating to show something 
+                "rating": book.get("rating"),
                 "comments":book.get("comments"),
                 "genre": book.get("genre"),
+                "sum_rating" : book.get("sum_rating") if book.get("sum_rating") else 0,
+                "counter_rating" : book.get("counter_rating") if book.get("counter_rating") else 0,
                 "pages": book.get("pages")
             })
 
@@ -90,8 +92,13 @@ def get_top_pick():
                 "id": str(book["_id"]),
                 "title": book.get("title"),
                 "author": book.get("author"),
-                "created_at": book.get("created_at").isoformat(),
+                "created_at": book.get("created_at").isoformat() if book.get("created_at") else None,
                 "num_pages": book.get("num_pages"),
+                "rating": book.get("rating"),
+                "comments":book.get("comments"),
+                "genre": book.get("genre"),
+                "sum_rating" : book.get("sum_rating") if book.get("sum_rating") else 0,
+                "counter_rating" : book.get("counter_rating") if book.get("counter_rating") else 0,
                 "pages": book.get("pages")
             })
 
@@ -112,8 +119,13 @@ def get_top_rated():
                 "id": str(book["_id"]),
                 "title": book.get("title"),
                 "author": book.get("author"),
-                "created_at": book.get("created_at").isoformat(),
+                "created_at": book.get("created_at").isoformat() if book.get("created_at") else None,
                 "num_pages": book.get("num_pages"),
+                "rating": book.get("rating"),
+                "comments":book.get("comments"),
+                "genre": book.get("genre"),
+                "sum_rating" : book.get("sum_rating") if book.get("sum_rating") else 0,
+                "counter_rating" : book.get("counter_rating") if book.get("counter_rating") else 0,
                 "pages": book.get("pages")
             })
 
@@ -131,8 +143,13 @@ def get_books_genre(genre):
                 "id": str(book["_id"]),
                 "title": book.get("title"),
                 "author": book.get("author"),
-                "created_at": book.get("created_at").isoformat(),
+                "created_at": book.get("created_at").isoformat() if book.get("created_at") else None,
                 "num_pages": book.get("num_pages"),
+                "rating": book.get("rating"),
+                "comments":book.get("comments"),
+                "genre": book.get("genre"),
+                "sum_rating" : book.get("sum_rating") if book.get("sum_rating") else 0,
+                "counter_rating" : book.get("counter_rating") if book.get("counter_rating") else 0,
                 "pages": book.get("pages")
             })
     return jsonify({"books": books_list}), 200
@@ -149,8 +166,13 @@ def get_recent_added():
                 "id": str(book["_id"]),
                 "title": book.get("title"),
                 "author": book.get("author"),
-                "created_at": book.get("created_at").isoformat(),
+                "created_at": book.get("created_at").isoformat() if book.get("created_at") else None,
                 "num_pages": book.get("num_pages"),
+                "rating": book.get("rating"),
+                "comments":book.get("comments"),
+                "genre": book.get("genre"),
+                "sum_rating" : book.get("sum_rating") if book.get("sum_rating") else 0,
+                "counter_rating" : book.get("counter_rating") if book.get("counter_rating") else 0,
                 "pages": book.get("pages")
             })
     return jsonify({"books": books_list}), 200
