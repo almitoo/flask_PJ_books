@@ -125,6 +125,7 @@ def create_new_story_sequel():
         enable_voice = bool(data["text_to_voice"])
         print(enable_voice)
         pages_previous = list(data["pages_previous"])
+        print(pages_previous)
         title_previous = str(data["title_previous"])
         resolution =   str( data.get("resolution" ,""))
         pages_texts_list = list(data.get("story_pages",[]))
