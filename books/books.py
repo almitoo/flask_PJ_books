@@ -66,8 +66,8 @@ def get_user_books():
                 "rating": book.get("rating"),
                 "comments":book.get("comments"),
                 "genre": book.get("genre"),
-                "sum_rating" : book.get("sum_rating") if book.get("sum_rating") else 0,
-                "counter_rating" : book.get("counter_rating") if book.get("counter_rating") else 0,
+                "sum_rating" : book.get("sum_rating") if book.get("sum_rating") else None,
+                "counter_rating" : book.get("counter_rating") if book.get("counter_rating") else None,
                 "pages": book.get("pages")
             })
 
@@ -77,7 +77,80 @@ def get_user_books():
         print(f"Error in get_user_books: {e}")
         return jsonify({"message": "Internal server error"}), 500
 
+@books.route("/all_books", methods =["GET"])
+@jwt_required()
+def getAllBooks():
+    try:
+        email = get_jwt_identity()
 
+        user = users_collection.find_one({"email": email})
+        if not user:
+            return jsonify({"message": "User not found"}), 404
+
+        user_books = books_collection.find({})
+
+        books_list = []
+        for book in user_books:
+            books_list.append({
+                "id": str(book["_id"]),
+                "title": book.get("title"),
+                "author": book.get("author"),
+                "created_at": book.get("created_at").isoformat() if book.get("created_at") else None,
+                "num_pages": book.get("num_pages"),
+                "rating": book.get("rating"),
+                "comments":book.get("comments"),
+                "genre": book.get("genre"),
+                "sum_rating" : book.get("sum_rating") if book.get("sum_rating") else None,
+                "counter_rating" : book.get("counter_rating") if book.get("counter_rating") else None,
+                "pages": book.get("pages")
+            })
+
+        return jsonify({"books": books_list}), 200
+
+    except Exception as e:
+        print(f"Error in the request: {e}")
+        return jsonify({"message": "Internal server error"}), 500
+
+@books.route("/byUser/id=<string:id_user>", methods =["GET"])
+@jwt_required()
+def getAllBooksByUser(id_user):
+    try:
+        email = get_jwt_identity()
+
+        user = users_collection.find_one({"email": email})
+        if not user:
+            return jsonify({"message": "current User not found"}), 404
+        
+        userIdInBookObj = ObjectId(id_user)
+
+        #find User
+        autherUser = users_collection.find_one({"_id":userIdInBookObj})
+        if not user:
+            return jsonify({"message": "auther books User not found"}), 404
+        
+        user_books = books_collection.find({"user_id":userIdInBookObj})
+
+        books_list = []
+        for book in user_books:
+            books_list.append({
+                "id": str(book["_id"]),
+                "title": book.get("title"),
+                "author": book.get("author"),
+                "created_at": book.get("created_at").isoformat() if book.get("created_at") else None,
+                "num_pages": book.get("num_pages"),
+                "rating": book.get("rating"),
+                "comments":book.get("comments"),
+                "genre": book.get("genre"),
+                "sum_rating" : book.get("sum_rating") if book.get("sum_rating") else None,
+                "counter_rating" : book.get("counter_rating") if book.get("counter_rating") else None,
+                "pages": book.get("pages")
+            })
+
+        return jsonify({"books": books_list}), 200
+
+    except Exception as e:
+        print(f"Error in the request: {e}")
+        return jsonify({"message": "Internal server error"}), 500
 
 @books.route("/get_top_pick", methods=["GET"])
 def get_top_pick():
