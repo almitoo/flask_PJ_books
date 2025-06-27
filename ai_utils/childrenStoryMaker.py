@@ -2,9 +2,6 @@ import ai_utils.textMaker as t
 from ai_utils.voiceMaker import newVoiceFile
 import ai_utils.imageAIMaker
 import re
-
-
-
 def locateGenreOfStory(pages_text):
     generes = [
         "Fantasy",
@@ -20,7 +17,6 @@ def locateGenreOfStory(pages_text):
         "History",
         "Thriller",
             ]
-
     prompt = f'''
         you need to choose a genere for the books : {pages_text}\n 
         the options are: {generes}\n
@@ -33,11 +29,9 @@ def locateGenreOfStory(pages_text):
     answer  = str(text_output.split("answer:")[1].strip())
     print(f"answer after the split {answer}")
     return answer
-
     
 # הפונקציה מקבלת טקסט של סיפור ילדים ומפרידה אותו לעמודים
 # כל עמוד מתחיל במחרוזת "Page X: " כאשר X הוא מספר העמוד
-
 def storyTextSplit(text):
     matches = re.findall(r"\*\*Page \d+:\*\*.*?(?=(\*\*Page \d+:\*\*|$))", text, re.DOTALL)
     arr = [page.strip() for page in matches if page.strip()]
@@ -50,10 +44,8 @@ def storyTextSplit(text):
         matches = re.split(r'(Page \d+:)', text)
         arr = [''.join(x) for x in zip(matches[1::2], matches[2::2])]
         arr = [page.strip() for page in arr if page.strip()]
-
     if not arr or 'Page 1' not in arr[0]:
         return []
-
     result = []
     for i, page in enumerate(arr):
         parts = page.split(f"Page {i+1}:")
@@ -61,7 +53,6 @@ def storyTextSplit(text):
             result.append(parts[1].strip())
         else:
             result.append(page.strip()) 
-
     return result
 # # מחלקת page מייצגת עמוד בסיפור ילדים
 # כוללת טקסט , קישור לתמונה וקובץ קול
@@ -74,32 +65,25 @@ class page():
     
     def get_text_page(self):
         return self.text_page
-
     def set_text_page(self, text_page):
         self.text_page = text_page
-
     def get_img_url(self):
         return self.img_url
-
     def set_img_url(self, img_url):
         self.img_url = img_url
-
     def to_dict(self):
         return {
             'text_page': self.text_page,
             'img_url': self.img_url,
             'voice_file_url':self.voice_file_url
         }
-
     
-
 # מחלקת הליבה שמייצרת את הסיפור
 # אם לא נשלח טקסט עמודים היא מייצרת את כל הסיפור לבד עם
 # ai_story_maker
 # אם נשלח טקסט עמודים היא מייצרת את הסיפור עם
 # story_media_maker
 class Story():
-
     def __init__(
         self,
         subject: str,
@@ -153,7 +137,6 @@ class Story():
         url_first_image =''
         images_prompts =[]
         for i in range(numPages):
-
             inputText = f'make an image prompt for children story according to this text {pages_texts_list[i]} , the subject of the story :{subject} '
             if (i>0):
                 cumulative_image_prompts = ' '.join([prompt for prompt in images_prompts])
@@ -161,7 +144,6 @@ class Story():
                 inputText += f'\n making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects]. The image should reflect a coherent world and preserve recurring elements seen in previous images. Focus on relevant features , e.g., expression, background setting, lighting and characters. \n here is the previous story pages for refrence {previous_story_pages}\n and here is the previous story pages images prompts for refrence: {cumulative_image_prompts} you must provide prompt any other respond will be not Accepted'
             
             print(inputText)
-
             inputText = t.makeTextAI(inputText)
             print(f"\n\n input prompt for image {i} in the story : {inputText}\n\n")
             pathImage = None
@@ -175,7 +157,6 @@ class Story():
                 pathImage = ai_utils.imageAIMaker.makeImageFromImage(inputText ,url_first_image,resolution=resolution)
             
             images_prompts.append(inputText)
-
             #no rellevant: move from  stable diffusion to gemini
             #pathImage = imageAIMaker.makeImageAI(inputText , steps , height_images  , width_images , staticNumIdPic)
             #staticNumIdPic+=1
@@ -184,7 +165,6 @@ class Story():
                 # voice_file_url = newVoiceFile(pages_texts_list[i],f"{title}_page{i}_voice")
                 voice_file_url = newVoiceFile(pages_texts_list[i],f"{self.title}_page{i}_voice")
             self.pages.append(page(pages_texts_list[i] , pathImage,voice_file_url)) 
-
         
 # נשתמש בה כאשר המשתמש לא שלח טקסט עמודים
 # כל הטקסט יכתב בעזרת
@@ -232,7 +212,6 @@ class Story():
             pages_text = storyTextSplit(story) 
             tries+=1
         
-
         #no rellevant: move from  stable diffusion to gemini
         #steps  =imageQuality[quality_images].value 
         
@@ -240,9 +219,7 @@ class Story():
         #save value of the first image to base the rest of the images on that
         url_first_image =''
         images_prompts =[]
-
         for i in range(numPages):
-
             inputText = f'make an image prompt for children story according to this text  {pages_text[i]}'
             if (i>0):
                 cumulative_image_prompts = ' '.join([prompt for prompt in images_prompts])
@@ -250,7 +227,6 @@ class Story():
                 inputText += f'\n making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects]. The image should reflect a coherent world and preserve recurring elements seen in previous images. Focus on relevant features , e.g., expression, background setting, lighting and characters. \n here is the previous story pages for refrence {previous_story_pages}\n and here is the previous story pages images prompts for refrence: {cumulative_image_prompts} you must provide prompt any other respond will be not Accepted'
             
             print(inputText)
-
             inputText = t.makeTextAI(inputText)
             
             images_prompts.append(inputText)
@@ -268,13 +244,11 @@ class Story():
                 # voice_file_url = newVoiceFile(pages_text[i],f"{title}_page{i}_voice")
                  voice_file_url = newVoiceFile(pages_text[i],f"{self.title}_page{i}_voice")
             self.pages.append(page(pages_text[i] , pathImage,voice_file_url)) 
-
         
     # # מחזירה את הסיפור כdict
     # המילון יכלול את מספר עמודים, שם המחבר, תיאור, כותרת וכל עמוד עם הטקסט שלו, קישור לתמונה וקובץ קול
     def to_dict(self):
         print(f"to_dict called: num pages = {len(self.pages)}")  
-
         dict = {
             'numPages': self.numPages,
             'auther': self.auther,
@@ -289,7 +263,6 @@ class Story():
     def change_page_text(self, num_page,  new_text):
         self.pages[num_page].set_text_page(new_text)
     
-
         # בתוך child.Story
     def to_dict_new(self):
         return {
@@ -309,8 +282,6 @@ class Story():
                 for p in self.pages
             ]
         }
-
-
 # מטרת המחלקה ליצור סיפור המשך לסיפור קיים
 # היא מקבלת את מספר העמודים, שם המחבר, תיאור, כותרת, עמודים של הספר הקודם וכותרת הספר הקודם
 class Continued_story(Story):
@@ -359,7 +330,6 @@ class Continued_story(Story):
         url_first_image =''
         images_prompts =[]
         for i in range(numPages):
-
             inputText = f'''make an image prompt for children story according to this text {pages_texts_list[i]} ''' 
             if (i>0):
                 cumulative_image_prompts = ' '.join([prompt for prompt in images_prompts])
@@ -367,7 +337,6 @@ class Continued_story(Story):
                 inputText+=f'''base your answer on the previous story text {previous_book_story}'''
                 inputText += f'\n making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects]. The image should reflect a coherent world and preserve recurring elements seen in previous images. Focus on relevant features , e.g., expression, background setting, lighting and characters. \n here is the previous story pages for refrence {previous_story_pages}\n and here is the previous story pages images prompts for refrence: {cumulative_image_prompts} you must provide prompt any other respond will be not Accepted'
             print(inputText)
-
             inputText = t.makeTextAI(inputText)
             print(f"\n\n input prompt for image {i} in the story : {inputText}\n\n")
             pathImage = None
@@ -388,7 +357,6 @@ class Continued_story(Story):
             if make_voice:
                 voice_file_url = newVoiceFile(pages_texts_list[i],f"{self.title}_page{i}_voice")
             self.pages.append(page(pages_texts_list[i] , pathImage,voice_file_url)) 
-
     def continuedStoryMakeWithAI(self,numPages, auther, description, title
                  ,previous_book_pages  ,previous_book_title
                 , make_voice,resolution):
@@ -397,9 +365,7 @@ class Continued_story(Story):
         for page_bool_previous in previous_book_pages:
             previous_book_story += page_bool_previous.get('text_page')
             previous_book_story +='\n'
-
         #part 2 make the story for the current book
-
         self.numPages = numPages
         self.description = description
         self.auther =auther
@@ -410,7 +376,6 @@ class Continued_story(Story):
             self.title = title
         else:
             self.title =t.makeTextAI(f"give me a title for children book with a description of {description} {extra_promt}")
-
         story = t.makeTextAI(f'''
     You are currently a children's writer who is required to write a children's book 
     You are making a sequel story, here is the text of the previous story: {previous_book_story}
@@ -434,7 +399,6 @@ class Continued_story(Story):
         url_first_image =''
         images_prompts =[]
         for i in range(numPages):
-
             inputText = f'make an image prompt for children story according to this text {pages_text[i]}'
             inputText = t.makeTextAI(inputText)
             if (i>0):
@@ -443,7 +407,6 @@ class Continued_story(Story):
                 inputText += f'\n making sure to maintain consistent visual elements such as [clothing, colors, background, art style, recurring objects]. The image should reflect a coherent world and preserve recurring elements seen in previous images. Focus on relevant features , e.g., expression, background setting, lighting and characters. \n here is the previous story pages for refrence {previous_story_pages}\n and here is the previous story pages images prompts for refrence: {cumulative_image_prompts}'
             
             print(inputText)
-
             pathImage = None
             
             images_prompts.append(inputText)
@@ -461,8 +424,3 @@ class Continued_story(Story):
                 voice_file_url = newVoiceFile(pages_text[i],f"{self.title}_page{i}_voice")
             self.pages.append(page(pages_text[i] , pathImage,voice_file_url)) 
         self.genre = locateGenreOfStory(pages_text)
-
-
-
-
-
