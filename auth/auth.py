@@ -211,7 +211,7 @@ def update_profile_image():
 @auth.route('/getAllUsers',methods =['GET'] )
 def getAllUsers():
     try:
-        userList = users_collection.find()
+        userList = users_collection.find({})
         returnList =[]
         for user in userList:
             returnList.append({
