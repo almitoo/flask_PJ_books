@@ -1,8 +1,4 @@
 from email.mime.text import MIMEText
-import random
-import smtplib
-import string
-import bcrypt
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
@@ -10,7 +6,7 @@ from db import users_collection
 import datetime
 import re
 from bson import ObjectId  # למעלה בראש הקובץ
-
+from books.utilities_books import getCounterBooksForId as count
 auth = Blueprint("auth", __name__)
 
 # 🔹 הרשמה
@@ -105,7 +101,7 @@ def login():
         "full_name": str(user["full_name"]),
         "bio": str(user["bio"]),
         "location": str(user["location"]),
-        "image_base64": str(user["image_base64"]),
+        ##"image_base64": str(user["image_base64"]),
         "genres" : list(user["genres"])
     }) , 200
     
@@ -138,7 +134,7 @@ def get_user():
     return jsonify(user)
 
 
-@auth.route("/update_genres", methods=["POST"])
+@auth.route("/update_genres", methods=["PUT"])
 def update_genres():
     data = request.json
     user_id = data.get("user_id")
@@ -212,4 +208,25 @@ def update_profile_image():
         return jsonify({"status": "no change"}), 200
     
 
+@auth.route('/getAllUsers',methods =['GET'] )
+def getAllUsers():
+    try:
+        userList = users_collection.find({})
+        returnList =[]
+        for user in userList:
+            returnList.append({
+                 "id":str(user["_id"]),
+                 "full_name":user["full_name"],
+                 "numBooks":count(user["_id"]),
+                 "bio":user["bio"],
+                 "location":user["location"],
+                "created in":user["created_at"]
+        })
+        return jsonify({"users": returnList}), 200
 
+    except Exception as e:
+        print(f"Error : {e}")
+        return jsonify({"message": "Internal server error"}), 500
+
+    
+    
