@@ -57,3 +57,7 @@ def checkBookInBookList(listBooks ,bookObj):
         if bookObj["title"] == b["title"] or b_text == book_text:
             return True
     return False
+
+def getCounterBooksForId(id_user):
+    id = (ObjectId(id_user))
+    return books_collection.count_documents({"user_id":id})
