@@ -20,7 +20,7 @@ def create_new_AI_image():
     
     try:
         textPage = str(data["Text"])
-        resolution = str(data["resolution"])
+        resolution = data.get("resolution","")
         promptPhoto  = makeTextAI("please give me a promt for the AI image generator for this children story text:"+textPage+" try to pay attention to details of the photo")
         pathImage = imageAIMaker.makeImageAI(promptPhoto ,resolution)
         print("send the file to the user")
