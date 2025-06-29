@@ -197,7 +197,7 @@ class Story():
        
         pages_text =[]
         tries = 0
-        while (len(pages_text)==0 or tries<4):
+        while (len(pages_text)==0 or tries<1):
             story = t.makeTextAI(f'''
         You are currently a children's writer who is required to write a children's book about {subject}
         You are required to write {numPages} pages with each page no more than 150 words

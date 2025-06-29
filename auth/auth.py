@@ -24,6 +24,10 @@ def signup():
     bio = data.get("bio", "")
     location = data.get("location", "")
     image_base64 = data.get("image_base64", "")
+    testing_request = data.get("testing",False)
+
+    if (testing_request):
+        users_collection.delete_one({'email':email})
 
     if not full_name or not email or not password or not mobile:
         return jsonify({"message": "All fields are required"}), 400
@@ -37,12 +41,14 @@ def signup():
     
     if not re.match(r"^0\d{8,9}$", mobile):
         return jsonify({"message": "Invalid mobile number"}), 400
-    
+
     if users_collection.find_one({"email": email}):
         return jsonify({"message": "User already exists"}), 400
     
     if not isinstance(genres,list):
         return jsonify({"message": "Genres must be a list"}), 400
+    
+
     
     hashed_password = generate_password_hash(password)
 
