@@ -5,6 +5,7 @@ from bson import ObjectId
 import datetime
 from .utilities_books import checkBookInBookList 
 from random import randint
+from random import sample
 books = Blueprint("books", __name__)
 # 🔹 יצירת ספר חדש
 @books.route("/createbook", methods=["POST"])
@@ -145,33 +146,34 @@ def getAllBooksByUser(id_user):
 @books.route("/get_top_pick", methods=["GET"])
 def get_top_pick():
 #בוחר 4 ספרים רנדומליים מהדאטה בייס 
-    books = books_collection.find()
-    lenght_collection = books_collection.count_documents({})-1
+    books = list(books_collection.find())  
+    lenght_collection = len(books) 
+
+    #if  the user dontbhave books
+    if lenght_collection == 0:
+        return jsonify({"books": []}), 200
+    
+   # בחירת עד 4 ספרים אקראיים ללא חזרות
+    selected_books = sample(books, min(4, len(books)))
+
     books_list = []
-    while(len(books_list)<4):
-        book  = books[randint(0,lenght_collection)]
-        if (not checkBookInBookList(books_list , book)):
-            books_list.append({
-                "id": str(book["_id"]),
-                "title": book.get("title"),
-                "author": book.get("author"),
-                "created_at": book.get("created_at").isoformat() if book.get("created_at") else None,
-                "created_at": book.get("created_at").isoformat() if book.get("created_at") else None,
-                "num_pages": book.get("num_pages"),
-                "rating": book.get("rating"),
-                "comments":book.get("comments"),
-                "genre": book.get("genre"),
-                "sum_rating" : book.get("sum_rating") if book.get("sum_rating") else 0,
-                "counter_rating" : book.get("counter_rating") if book.get("counter_rating") else 0,
-                "rating": book.get("rating"),
-                "comments":book.get("comments"),
-                "genre": book.get("genre"),
-                "sum_rating" : book.get("sum_rating") if book.get("sum_rating") else 0,
-                "counter_rating" : book.get("counter_rating") if book.get("counter_rating") else 0,
-                "pages": book.get("pages")
-            })
+    for book in selected_books:
+        books_list.append({
+            "id": str(book.get("_id")),
+            "title": book.get("title"),
+            "author": book.get("author"),
+            "created_at": book.get("created_at").isoformat() if book.get("created_at") else None,
+            "num_pages": book.get("num_pages"),
+            "comments": book.get("comments"),
+            "genre": book.get("genre"),
+            "rating": book.get("rating"),
+            "sum_rating": book.get("sum_rating") or 0,
+            "counter_rating": book.get("counter_rating") or 0,
+            "pages": book.get("pages")
+        })
 
     return jsonify({"books": books_list}), 200
+
 @books.route("/get_top_rated", methods=["GET"])
 def get_top_rated():
     #בוחר 4 ספרים עם הדירוג הגבוה ביותר מהדאטה בייס 
@@ -230,23 +232,18 @@ def get_books_genre(genre):
     return jsonify({"books": books_list}), 200
 @books.route("/recent_added" , methods=["GET"])
 def get_recent_added():
-    books = books_collection.find({}).sort({"created_at":-1})
+    books_cursor = books_collection.find({}).sort("created_at", -1).limit(5)
+    books = list(books_cursor)
+    
     books_list = []
-    for i in range(5):
-        book = books[i]
-        if (not checkBookInBookList(books_list , book)):
+    for book in books:
+        if not checkBookInBookList(books_list, book):
             books_list.append({
                 "id": str(book["_id"]),
                 "title": book.get("title"),
                 "author": book.get("author"),
                 "created_at": book.get("created_at").isoformat() if book.get("created_at") else None,
-                "created_at": book.get("created_at").isoformat() if book.get("created_at") else None,
                 "num_pages": book.get("num_pages"),
-                "rating": book.get("rating"),
-                "comments":book.get("comments"),
-                "genre": book.get("genre"),
-                "sum_rating" : book.get("sum_rating") if book.get("sum_rating") else 0,
-                "counter_rating" : book.get("counter_rating") if book.get("counter_rating") else 0,
                 "rating": book.get("rating"),
                 "comments":book.get("comments"),
                 "genre": book.get("genre"),
