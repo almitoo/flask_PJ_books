@@ -31,7 +31,8 @@ def create_book_from_ai_utils(jsonBookData):
         "num_pages": len(pages),
         "rating" : 0,
         "genre" :genre,
-        "pages": pages
+        "pages": pages,
+        "is_shared": False
     }
 
     result = books_collection.insert_one(book)
