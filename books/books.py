@@ -28,8 +28,8 @@ def create_book():
         "num_pages": len(pages),
         "rating": 0,
         "comments":[],
-        "pages": pages,
-        "is_shared":False
+        "comments":[],
+        "pages": pages
     }
     result = books_collection.insert_one(book)
     return jsonify({
@@ -59,8 +59,7 @@ def get_user_books():
                 "genre": book.get("genre"),
                 "sum_rating" : book.get("sum_rating") if book.get("sum_rating") else None,
                 "counter_rating" : book.get("counter_rating") if book.get("counter_rating") else None,
-                "pages": book.get("pages"),
-                "is_shared": book.get("is_shared")
+                "pages": book.get("pages")
             })
 
         return jsonify({"books": books_list}), 200
@@ -93,9 +92,8 @@ def getAllBooks():
                 "genre": book.get("genre"),
                 "sum_rating" : book.get("sum_rating") if book.get("sum_rating") else None,
                 "counter_rating" : book.get("counter_rating") if book.get("counter_rating") else None,
-                "pages": book.get("pages"),
-                "is_shared": book.get("is_shared")
-                })
+                "pages": book.get("pages")
+            })
 
         return jsonify({"books": books_list}), 200
 
@@ -135,9 +133,8 @@ def getAllBooksByUser(id_user):
                 "genre": book.get("genre"),
                 "sum_rating" : book.get("sum_rating") if book.get("sum_rating") else None,
                 "counter_rating" : book.get("counter_rating") if book.get("counter_rating") else None,
-                "pages": book.get("pages"),
-                "is_shared": book.get("is_shared")
-                })
+                "pages": book.get("pages")
+            })
 
         return jsonify({"books": books_list}), 200
 
@@ -148,7 +145,7 @@ def getAllBooksByUser(id_user):
 @books.route("/get_top_pick", methods=["GET"])
 def get_top_pick():
 #בוחר 4 ספרים רנדומליים מהדאטה בייס 
-    books = list(books_collection.find({"is_shared": True}))  
+    books = books_collection.find()
     lenght_collection = books_collection.count_documents({})-1
     books_list = []
     while(len(books_list)<4):
@@ -171,9 +168,8 @@ def get_top_pick():
                 "genre": book.get("genre"),
                 "sum_rating" : book.get("sum_rating") if book.get("sum_rating") else 0,
                 "counter_rating" : book.get("counter_rating") if book.get("counter_rating") else 0,
-                "pages": book.get("pages"),
-                 "is_shared": book.get("is_shared")
-                 })
+                "pages": book.get("pages")
+            })
 
     return jsonify({"books": books_list}), 200
 @books.route("/get_top_rated", methods=["GET"])
@@ -202,9 +198,8 @@ def get_top_rated():
                 "genre": book.get("genre"),
                 "sum_rating" : book.get("sum_rating") if book.get("sum_rating") else 0,
                 "counter_rating" : book.get("counter_rating") if book.get("counter_rating") else 0,
-                "pages": book.get("pages"),
-                 "is_shared": book.get("is_shared")
-                 })
+                "pages": book.get("pages")
+            })
 
     return jsonify({"books": books_list}), 200
 @books.route("/genre/<string:genre>" , methods=["GET"])
@@ -230,9 +225,8 @@ def get_books_genre(genre):
                 "genre": book.get("genre"),
                 "sum_rating" : book.get("sum_rating") if book.get("sum_rating") else 0,
                 "counter_rating" : book.get("counter_rating") if book.get("counter_rating") else 0,
-                "pages": book.get("pages"),
-                 "is_shared": book.get("is_shared")
-                 })
+                "pages": book.get("pages")
+            })
     return jsonify({"books": books_list}), 200
 @books.route("/recent_added" , methods=["GET"])
 def get_recent_added():
@@ -258,9 +252,8 @@ def get_recent_added():
                 "genre": book.get("genre"),
                 "sum_rating" : book.get("sum_rating") if book.get("sum_rating") else 0,
                 "counter_rating" : book.get("counter_rating") if book.get("counter_rating") else 0,
-                "pages": book.get("pages"),
-                 "is_shared": book.get("is_shared")
-                 })
+                "pages": book.get("pages")
+            })
     return jsonify({"books": books_list}), 200
 
 @books.route("/new_rating_for_book/id=<string:id_book>" ,methods=["PUT"])
@@ -437,77 +430,3 @@ def checkDeleteBook(id_book):
     else:
         return  jsonify({"message": "ERROR could not delete because the book was not made by the user "}), 400
 
-@books.route("/shared_books", methods=["GET"])
-def get_shared_books():
-    try:
-        shared_books=books_collection.find({"is_shared":True})
-        books_list=[]
-
-        for book in shared_books:
-            books_list.append({
-                "id": str(book["_id"]),
-                "title": book.get("title"),
-                "author": book.get("author"),
-                "created_at": book.get("created_at").isoformat() if book.get("created_at") else None,
-                "num_pages": book.get("num_pages"),
-                "rating": book.get("rating"),
-                "comments": book.get("comments"),
-                "genre": book.get("genre"),
-                "sum_rating": book.get("sum_rating") if book.get("sum_rating") else 0,
-                "counter_rating": book.get("counter_rating") if book.get("counter_rating") else 0,
-                "pages": book.get("pages"),               
-                "is_shared": book.get("is_shared")
-
-            })
-        return jsonify({"books": books_list}), 200
-    except Exception as e:
-        print(f"Error in get_shared_books: {e}")
-        return jsonify({"message": "Internal server error"}), 500
-
-@books.route("/update_share_status/<string:id_book>", methods=["PUT"])
-@jwt_required()
-def update_share_status(id_book):
-
-    print(f"🟡 Received PUT request for book: {id_book}")
-
-    try:
-        email = get_jwt_identity()
-        user = users_collection.find_one({"email": email})
-        if not user:
-            return jsonify({"message": "User not found"}), 404
-
-        book_id = ObjectId(id_book)
-        book = books_collection.find_one({"_id": book_id})
-        if not book:
-            return jsonify({"message": "Book not found"}), 404
-
-        # only the ceater of the book can change this
-        if book["user_id"] != user["_id"]:
-            return jsonify({"message": "Unauthorized"}), 403
-
-        data = request.json
-        print(f"📥 Received payload: {data}")
-
-        if "is_shared" not in data:
-            return jsonify({"message": "Missing 'is_shared' in request"}), 400
-
-        is_shared = data["is_shared"]
-        print(f"📊 is_shared type: {type(is_shared)} value: {is_shared}")
-
-
-
-        if not isinstance(is_shared, bool):
-            return jsonify({"message": "'is_shared' must be a boolean"}), 400
-
-        # עדכון בפועל
-        result=books_collection.update_one(
-            {"_id": book_id},
-            {"$set": {"is_shared": is_shared}}
-        )
-        print(f"✅ DB update acknowledged: {result.acknowledged}, modified: {result.modified_count}")
-
-        return jsonify({"message": "Share status updated"}), 200
-
-    except Exception as e:
-        print(f"Error updating share status: {e}")
-        return jsonify({"message": "Internal server error"}), 500
