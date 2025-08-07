@@ -7,6 +7,10 @@ import datetime
 import re
 from bson import ObjectId  # למעלה בראש הקובץ
 from books.utilities_books import getCounterBooksForId as count
+import smtplib
+import string
+import random
+from email.mime.text import MIMEText
 auth = Blueprint("auth", __name__)
 
 # 🔹 הרשמה
@@ -236,3 +240,53 @@ def getAllUsers():
 
     
     
+
+# 🔹 יצירת סיסמה רנדומלית
+def generate_random_password(length=10):
+    characters = string.ascii_letters + string.digits
+    # return 'AAAa1234567'
+    return ''.join(random.choice(characters) for _ in range(length))
+
+# 🔹 שליחת מייל (Gmail SMTP)
+def send_email(to_email, subject, body):
+    msg = MIMEText(body)
+    msg['Subject'] = subject
+    msg['From'] = 'amitishay@gmail.com'  # שנה למייל שלך
+    msg['To'] = to_email
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+        server.login('amitishay@gmail.com', 'bgil hrgx mroa fmvj')  # הכנס כאן סיסמת אפליקציה
+        server.send_message(msg)
+
+# 🔹 איפוס סיסמה ושליחתה למייל
+@auth.route("/reset_password", methods=["POST"])
+def reset_password():
+    data = request.json
+    email = data.get("email", "").strip()
+
+    if not email:
+        return jsonify({"message": "Email is required"}), 400
+
+    user = users_collection.find_one({"email": email})
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    new_password = generate_random_password()
+    hashed_password = generate_password_hash(new_password)
+
+    users_collection.update_one(
+        {"_id": user["_id"]},
+        {"$set": {"password_hash": hashed_password}}
+    )
+
+    # שלח למייל
+    try:
+        send_email(
+            to_email=email,
+            subject="Your New Password",
+            body=f"Hello {user['full_name']},\n\nYour new password is: {new_password}\nPlease log in and change it as soon as possible."
+        )
+    except Exception as e:
+        return jsonify({"message": f"Failed to send email: {str(e)}"}), 500
+
+    return jsonify({"message": "New password sent to your email"}), 200
